@@ -28,7 +28,7 @@
   #messageContainer {
     max-width: 500px;
     width: calc(100% - 10px);
-    heigth: 300px;
+    height: 300px;
 
     border: 1px solid gray;
     border-radius: 5px;
