@@ -30,7 +30,7 @@
     // Construct a msg object containing the data the server needs to process the message from the chat client.
     var msg = {
       type: 'message',
-      author: name.value,
+      author: encryption(name.value),
       text: encryption(message),
       id:   clientID,
       date: Date.now()
@@ -46,15 +46,21 @@
     webSocket.close();
   }
 
-  function submitMessage() {
-    sendText(newMessage.value)
-    scrollToBottom()
+  async function submitMessage() {
+    await sendText(newMessage.value)
     newMessage.value = null
+    scrollToBottom()
   }
 
   function scrollToBottom() {
     let messengersContainer = document.getElementById("messengersContainer");
-    messengersContainer.scrollTop = messengersContainer.scrollHeight;
+
+    if (!!messengersContainer)
+      messengersContainer.scroll({
+        top: messengersContainer.scrollHeight,
+        behavior: 'smooth'
+      })
+    // messengersContainer.scrollTop = messengersContainer.scrollHeight;
   }
 
   getKey(key.value)
@@ -78,6 +84,7 @@
 
   webSocket.onmessage = function (event) {
     const _json = JSON.parse(event.data)
+    console.log('received', _json);
 
     if (_json && _json.author != name) {
       store.commit('ADD_MESSAGE', _json)

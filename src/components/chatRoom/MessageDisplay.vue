@@ -9,7 +9,7 @@
 
   const name = ref(store.state.name);
 
-  const fromActiveUser = name.value == props.message.author
+  const fromActiveUser = name.value == decryption(props.message.author)
 </script>
 
 <template>
@@ -19,7 +19,7 @@
     </div>
 
     <div id="author">
-      {{ props.message.author }}
+      {{ decryption(props.message.author) }}
     </div>
   </div>
 </template>

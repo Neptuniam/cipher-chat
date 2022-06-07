@@ -18,7 +18,6 @@ function buildEncrypted(key) {
   encryptedKey = alpha
 
   // Convert the encryption key by removing duplicate letters
-  console.log({ key});
   let noDups = key.split('').filter((char, pos, self) => self.indexOf(char) == pos)
 
   var i
