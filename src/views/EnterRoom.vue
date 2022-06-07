@@ -24,7 +24,7 @@
 </script>
 
 <template>
-  <h1>Welcome to Chat Encrypt</h1>
+  <h1>Welcome to Cipher Chat!</h1>
 
   <h3>Please enter your custom encryption key</h3>
 
@@ -32,7 +32,7 @@
 
   <br>
 
-  <input type="text" v-model="key" placeholder="Encryption Key">
+  <input type="password" v-model="key" placeholder="Encryption Key">
 
   <br><br>
 
@@ -46,11 +46,32 @@
 </template>
 
 <style scoped>
-a {
-  color: #42b983;
-}
+  h3 {
+    margin-bottom: 40px;
+  }
 
-#errorMessage {
-  color: red;
-}
+  input {
+    width: 300px;
+    margin-bottom: 20px;
+    padding: 5px;
+
+    font-size: 18px;
+  }
+
+  button {
+    width: 315px;
+
+    font-size: 18px;
+    padding: 10px;
+
+    background-color: #1877F2 !important;
+    color: white;
+    border-color: silver;
+
+    border-radius: 5px;
+  }
+
+  #errorMessage {
+    color: red;
+  }
 </style>
