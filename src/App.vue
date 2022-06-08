@@ -20,6 +20,9 @@ const key = computed(() => store.state.key);
 </template>
 
 <style>
+html {
+  overflow-y: hidden !important;
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

@@ -10,6 +10,26 @@
   const name = ref(store.state.name);
 
   const fromActiveUser = name.value == decryption(props.message.author)
+
+  function uniqueColour(name, s=30, l=40) {
+    let hash = 0
+    for (var i = 0; i < name.length; i++)
+      hash = name.charCodeAt(i) + ((hash << 5) - hash)
+    return 'hsl(' + hash % 360 + ', ' + s + '%, ' + l + '%)'
+  }
+
+  function readableDateTime(time) {
+    const _date = new Date(time)
+    let _hours = _date.getHours()
+    let zone = 'am'
+
+    if (_hours > 12) {
+      _hours -= 12
+      zone = 'pm'
+    }
+
+    return `${_hours}:${_date.getMinutes()}${zone}`
+  }
 </script>
 
 <template>
@@ -18,8 +38,12 @@
       {{ decryption(props.message.text) }}
     </div>
 
-    <div id="author">
+    <div id="author" :style="`color: ${uniqueColour(decryption(props.message.author))}`">
       {{ decryption(props.message.author) }}
+    </div>
+
+    <div id="dateTime">
+      {{ readableDateTime(props.message.date) }}
     </div>
   </div>
 </template>
@@ -37,6 +61,8 @@
     padding: 5px;
 
     text-align: left;
+
+    position: relative;
   }
 
   #messageContainer.received {
@@ -56,5 +82,11 @@
   #author {
     font-size: 14px;
     margin-top: 20px
+  }
+
+  #dateTime {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
   }
 </style>

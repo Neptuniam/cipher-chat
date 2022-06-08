@@ -60,7 +60,6 @@
         top: messengersContainer.scrollHeight,
         behavior: 'smooth'
       })
-    // messengersContainer.scrollTop = messengersContainer.scrollHeight;
   }
 
   getKey(key.value)
@@ -82,12 +81,11 @@
     }
   };
 
-  webSocket.onmessage = function (event) {
+  webSocket.onmessage = async function (event) {
     const _json = JSON.parse(event.data)
-    console.log('received', _json);
 
     if (_json && _json.author != name) {
-      store.commit('ADD_MESSAGE', _json)
+      await store.commit('ADD_MESSAGE', _json)
       scrollToBottom()
     }
   }
@@ -105,7 +103,9 @@
   <div id="inputRow">
     <textarea rows="3" type="text" placeholder="New Message" v-model="newMessage" @keyup.enter="submitMessage()" />
 
-    <button type="button" name="button" @click="submitMessage">Send</button>
+    <button type="button" name="button" @click="submitMessage">
+      SEND
+    </button>
   </div>
 </template>
 
@@ -116,7 +116,7 @@
     margin: auto;
   }
   #messengersContainer {
-    height: calc(100vh - 37px - 72px - 70px);
+    height: calc(100vh - 37px - 72px - 75px);
     overflow-y: auto;
     scroll-behavior: smooth;
 
@@ -125,15 +125,18 @@
 
   #inputRow {
     margin-top: 15px;
+    height: 75px !important;
   }
   #inputRow textarea {
+    font-size: 18px;
     width: calc(100% - 120px);
+    padding: 5px;
   }
   #inputRow button {
     width: 100px;
-    height: 51px;
+    height: 78px;
 
     position: relative;
-    top: -21px;
+    top: -34px;
   }
 </style>
