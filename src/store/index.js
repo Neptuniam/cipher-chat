@@ -3,8 +3,11 @@ import { createStore } from "vuex";
 const store = createStore({
   state: {
     name: null,
-    key: null,
+    roomName: 'a',
+    key: 'Hackers4Life',
 
+
+    room: {},
     messages: [
       // {"type": "message", "author": "Liam", "text": "D~ff^", "id": "40d3ed63-c534-4d4d-9b55-987e7d1926ca", "date": 1654573008604},
       // {"type": "message", "author": "Carter", "text": "|%", "id": "bfecc76e-7f12-4e9e-ba12-a78cd766d354", "date": 1654573068494},
@@ -33,10 +36,17 @@ const store = createStore({
   },
   mutations:{
     SAVE_PROFILE(state, profile) {
-      const { name, key } = profile
+      const { name, roomName, key } = profile
 
       state.name = name
+      state.roomName = roomName
       state.key = key
+    },
+
+    SET_ROOM_INFO(state, room) {
+      state.room.room = room.room
+      state.room.users = room.users
+      state.room.count = room.total_users
     },
 
     ADD_MESSAGE(state, message) {

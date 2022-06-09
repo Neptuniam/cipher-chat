@@ -7,7 +7,10 @@
 
   const store = useStore();
 
+  const room = ref(store.state.room);
+
   const name = ref(store.state.name);
+  const roomName = ref(store.state.roomName);
   const key = ref(store.state.key);
   const messages = computed(() => store.state.messages);
 
@@ -64,7 +67,7 @@
 
   getKey(key.value)
   const clientID = uuidv4()
-  const webSocket = new WebSocket(`wss://apps.carterbourette.ca/chat/${clientID}`);
+  const webSocket = new WebSocket(`wss://apps.carterbourette.ca/chat/rooms/${roomName.value}/users/${name.value}`);
 
   webSocket.onopen = function(evt) {
     console.log("***ONOPEN");
@@ -84,14 +87,26 @@
   webSocket.onmessage = async function (event) {
     const _json = JSON.parse(event.data)
 
-    if (_json && _json.author != name) {
-      await store.commit('ADD_MESSAGE', _json)
+    if (_json.event == 'joined' || _json.event == 'left') {
+      await store.commit('SET_ROOM_INFO', _json)
+    } else if (_json && _json.payload && _json.payload.author != name.value) {
+      await store.commit('ADD_MESSAGE', _json.payload)
       scrollToBottom()
     }
   }
 </script>
 
 <template>
+  <div id="roomInfo">
+    In room ({{ room.room }})
+
+    <ol>
+      <li v-for="user in room.users">
+        {{ user }}
+      </li>
+    </ol>
+  </div>
+
   <h1>Welcome, {{ name }}</h1>
 
   <div id="messengersContainer">
@@ -110,6 +125,19 @@
 </template>
 
 <style scoped>
+  #roomInfo {
+    position: fixed;
+    top: 5px;
+    left: 5px;
+
+    border: 1px solid grey;
+    border-radius: 5px;
+
+    padding: 10px 20px;
+
+    text-align: left;
+  }
+
   #messengersContainer, #inputRow {
     width: 1000px;
     max-width: 100%;

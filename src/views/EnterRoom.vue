@@ -4,6 +4,7 @@
 
   const store = useStore();
   const name = ref(store.state.name || '')
+  const roomName = ref(store.state.roomName || '')
   const key = ref(store.state.key || '')
   const error = ref('')
 
@@ -12,11 +13,14 @@
 
     if (!name.value) {
       error.value = 'Name is required'
+    } else if (!roomName.value) {
+      error.value = 'Room Name is required'
     } else if (!key.value) {
       error.value = 'Encryption Key is required'
     } else {
       store.commit('SAVE_PROFILE', {
         name: name.value,
+        roomName: roomName.value,
         key: key.value
       });
     }
@@ -29,6 +33,10 @@
   <h3>Please enter your custom encryption key</h3>
 
   <input type="text" v-model="name" placeholder="Your username">
+
+  <br>
+
+  <input type="password" v-model="roomName" placeholder="Room name">
 
   <br>
 
