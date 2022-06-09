@@ -71,7 +71,7 @@
   }
   #messageContainer.sent {
     margin: 10px 0px 10px auto;
-    border-color: #1877F2 !important;
+    border-color: rgb(84 105 212 / 0.5) !important;
   }
 
   #message {

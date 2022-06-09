@@ -130,7 +130,7 @@
     top: 5px;
     left: 5px;
 
-    border: 1px solid grey;
+    border: 1px solid rgb(84 105 212 / 0.5);
     border-radius: 5px;
 
     padding: 10px 20px;
@@ -144,7 +144,7 @@
     margin: auto;
   }
   #messengersContainer {
-    height: calc(100vh - 37px - 72px - 75px);
+    height: calc(100vh - 37px - 72px - 95px);
     overflow-y: auto;
     scroll-behavior: smooth;
 
@@ -153,18 +153,19 @@
 
   #inputRow {
     margin-top: 15px;
-    height: 75px !important;
+    height: 95px !important;
   }
   #inputRow textarea {
     font-size: 18px;
-    width: calc(100% - 120px);
+    width: calc(100% - 130px);
+    margin-right: 10px;
     padding: 5px;
   }
   #inputRow button {
     width: 100px;
-    height: 78px;
+    height: 95px;
 
     position: relative;
-    top: -34px;
+    top: -41px;
   }
 </style>

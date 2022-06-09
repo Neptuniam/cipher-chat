@@ -32,21 +32,26 @@
 
   <h3>Please enter your custom encryption key</h3>
 
-  <input type="text" v-model="name" placeholder="Your username">
+  <form>
+    <label>Your username</label>
+    <input type="text" v-model="name" placeholder="">
 
-  <br>
+    <br>
 
-  <input type="password" v-model="roomName" placeholder="Room name">
+    <label>Room name</label>
+    <input type="password" v-model="roomName" placeholder="">
 
-  <br>
+    <br>
 
-  <input type="password" v-model="key" placeholder="Encryption Key">
+    <label>Encryption Key</label>
+    <input type="password" v-model="key" placeholder="">
 
-  <br><br>
+    <br><br>
 
-  <button type="button" name="button" @click="submitForm()">
-    Submit
-  </button>
+    <button type="button" name="button" @click="submitForm()">
+      Submit
+    </button>
+  </form>
 
   <div id="errorMessage">
     {{ error }}
@@ -58,8 +63,18 @@
     margin-bottom: 40px;
   }
 
-  input {
+  form {
+    text-align: left;
     width: 300px;
+    max-width: 100%;
+    margin: auto;
+  }
+
+  input {
+    margin-bottom: 20px;
+  }
+
+  /* input {
     margin-bottom: 20px;
     padding: 5px;
 
@@ -77,7 +92,7 @@
     border-color: silver;
 
     border-radius: 5px;
-  }
+  } */
 
   #errorMessage {
     color: red;
