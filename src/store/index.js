@@ -3,8 +3,8 @@ import { createStore } from "vuex";
 const store = createStore({
   state: {
     name: null,
-    roomName: 'a',
-    key: 'Hackers4Life',
+    roomName: null,
+    key: null,
 
 
     room: {},
