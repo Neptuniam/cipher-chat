@@ -2,10 +2,10 @@
   import MessageDisplay from '../components/chatRoom/MessageDisplay.vue'
 
   import { useStore } from "vuex";
-  import { computed, ref } from "vue";
+  import { computed, ref, onUnmounted } from "vue";
   import { getKey, encryption } from '../services/util.translate.js'
 
-  import { useWebNotification, useFocus } from '@vueuse/core'
+  import { useWebNotification, useFocus, useIdle } from '@vueuse/core'
 
 
   const store = useStore();
@@ -18,6 +18,7 @@
   const messages = computed(() => store.state.messages);
 
   const newMessage = ref('')
+  const { idle, lastActive } = useIdle(5000) // 5 min
 
 
   function uuidv4() {
@@ -53,9 +54,11 @@
   }
 
   async function submitMessage() {
-    await sendText(newMessage.value)
-    newMessage.value = null
-    scrollToBottom()
+    if (!!newMessage.value) {
+      await sendText(newMessage.value)
+      newMessage.value = null
+      scrollToBottom()
+    }
   }
 
   function scrollToBottom() {
@@ -93,7 +96,10 @@
       if (_json.event == 'joined' || _json.event == 'left') {
         await store.commit('SET_ROOM_INFO', _json)
       } else if (_json && _json.payload && _json.payload.author != name.value) {
-        show()
+        // Only send notifications if player is not on screen
+        if (idle.value)
+          show()
+
         await store.commit('ADD_MESSAGE', _json.payload)
         scrollToBottom()
       }
@@ -125,6 +131,11 @@
   // Auto focus input field
   const messageInput = ref()
   const { focused } = useFocus(messageInput, { initialValue: true })
+
+
+  onUnmounted(() => {
+    webSocket.close();
+  })
 </script>
 
 <template>
