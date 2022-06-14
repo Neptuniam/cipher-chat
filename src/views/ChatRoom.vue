@@ -5,7 +5,7 @@
   import { computed, ref, onUnmounted } from "vue";
   import { getKey, encryption } from '../services/util.translate.js'
 
-  import { useWebNotification, useFocus, useIdle } from '@vueuse/core'
+  import { useWebNotification, useFocus, useWindowFocus } from '@vueuse/core'
 
 
   const store = useStore();
@@ -18,7 +18,7 @@
   const messages = computed(() => store.state.messages);
 
   const newMessage = ref('')
-  const { idle, lastActive } = useIdle(5000) // 5 min
+  const isFocused = useWindowFocus()
 
 
   function uuidv4() {
@@ -97,7 +97,7 @@
         await store.commit('SET_ROOM_INFO', _json)
       } else if (_json && _json.payload && _json.payload.author != name.value) {
         // Only send notifications if player is not on screen
-        if (idle.value)
+        if (!isFocused.value)
           show()
 
         await store.commit('ADD_MESSAGE', _json.payload)
