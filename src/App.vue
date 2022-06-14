@@ -12,6 +12,16 @@ const store = useStore();
 
 const name = computed(() => store.state.name);
 const key = computed(() => store.state.key);
+
+
+const urlSearchParams = new URLSearchParams(window.location.search);
+const params = Object.fromEntries(urlSearchParams.entries());
+
+if (params.room != null) {
+  store.commit('SAVE_PROFILE', {
+    roomName: params.room
+  });
+}
 </script>
 
 <template>

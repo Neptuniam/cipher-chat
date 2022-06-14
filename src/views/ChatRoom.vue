@@ -5,6 +5,9 @@
   import { computed, ref } from "vue";
   import { getKey, encryption } from '../services/util.translate.js'
 
+  import { useWebNotification, useFocus } from '@vueuse/core'
+
+
   const store = useStore();
 
   const room = ref(store.state.room);
@@ -65,35 +68,63 @@
       })
   }
 
-  getKey(key.value)
-  const clientID = uuidv4()
-  const webSocket = new WebSocket(`wss://apps.carterbourette.ca/chat/rooms/${roomName.value}/users/${name.value}`);
+  let webSocket
+  function initConnection() {
+    webSocket = new WebSocket(`wss://apps.carterbourette.ca/chat/rooms/${roomName.value}/users/${name.value}`);
 
-  webSocket.onopen = function(evt) {
-    console.log("***ONOPEN");
-    webSocket.send('5209ac21-2004-4f17-bdf4-b2e66d4ce50f');
-  };
+    webSocket.onopen = function(evt) {
+      webSocket.send('5209ac21-2004-4f17-bdf4-b2e66d4ce50f');
+    };
 
-  webSocket.onclose = function(event) {
-    if (event.wasClean) {
-      alert(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
-    } else {
-      // e.g. server process killed or network down
-      // event.code is usually 1006 in this case
-      alert('[close] Connection died');
-    }
-  };
+    webSocket.onclose = function(event) {
+      if (event.wasClean) {
+        alert(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+      } else {
+        // e.g. server process killed or network down
+        // event.code is usually 1006 in this case
+        alert('[close] Connection died');
+        // initConnection()
+      }
+    };
 
-  webSocket.onmessage = async function (event) {
-    const _json = JSON.parse(event.data)
+    webSocket.onmessage = async function (event) {
+      const _json = JSON.parse(event.data)
 
-    if (_json.event == 'joined' || _json.event == 'left') {
-      await store.commit('SET_ROOM_INFO', _json)
-    } else if (_json && _json.payload && _json.payload.author != name.value) {
-      await store.commit('ADD_MESSAGE', _json.payload)
-      scrollToBottom()
+      if (_json.event == 'joined' || _json.event == 'left') {
+        await store.commit('SET_ROOM_INFO', _json)
+      } else if (_json && _json.payload && _json.payload.author != name.value) {
+        show()
+        await store.commit('ADD_MESSAGE', _json.payload)
+        scrollToBottom()
+      }
     }
   }
+
+
+  getKey(key.value)
+  const clientID = uuidv4()
+  initConnection()
+
+  const {
+    // isSupported,
+    // notification,
+    show,
+    // close,
+    // onClick,
+    // onShow,
+    // onError,
+    // onClose,
+  } = useWebNotification({
+    title: `New message in ${roomName.value}`,
+    dir: 'auto',
+    lang: 'en',
+    renotify: true,
+    tag: 'test',
+  })
+
+  // Auto focus input field
+  const messageInput = ref()
+  const { focused } = useFocus(messageInput, { initialValue: true })
 </script>
 
 <template>
@@ -116,7 +147,7 @@
   </div>
 
   <div id="inputRow">
-    <textarea rows="3" type="text" placeholder="New Message" v-model="newMessage" @keyup.enter="submitMessage()" />
+    <textarea rows="3" type="text" placeholder="New Message" v-model="newMessage" @keyup.enter="submitMessage()" ref="messageInput" />
 
     <button type="button" name="button" @click="submitMessage">
       SEND

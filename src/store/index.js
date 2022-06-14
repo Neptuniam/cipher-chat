@@ -55,6 +55,7 @@ const store = createStore({
   },
   actions:{
     saveNote({ commit }, profile) {
+
       commit('SAVE_NOTE',title);
     }
   }

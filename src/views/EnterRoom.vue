@@ -1,9 +1,10 @@
 <script setup>
   import { ref } from 'vue'
   import { useStore } from "vuex";
+  import { useStorage } from '@vueuse/core'
 
   const store = useStore();
-  const name = ref(store.state.name || '')
+  const name = useStorage('name', '')
   const roomName = ref(store.state.roomName || '')
   const key = ref(store.state.key || '')
   const error = ref('')
@@ -34,17 +35,17 @@
 
   <form>
     <label>Your username</label>
-    <input type="text" v-model="name" placeholder="">
+    <input type="text" v-model="name" @keyup.enter="submitForm()">
 
     <br>
 
     <label>Room name</label>
-    <input type="password" v-model="roomName" placeholder="">
+    <input type="text" v-model="roomName" @keyup.enter="submitForm()">
 
     <br>
 
     <label>Encryption Key</label>
-    <input type="password" v-model="key" placeholder="">
+    <input type="password" v-model="key" @keyup.enter="submitForm()">
 
     <br><br>
 
@@ -96,5 +97,6 @@
 
   #errorMessage {
     color: red;
+    margin-top: 40px;
   }
 </style>
