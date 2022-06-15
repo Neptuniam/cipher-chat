@@ -255,7 +255,7 @@
 
   <div id="usersTypingRow">
     <template v-for="(user, index) in usersTyping" :key="user">
-      {{ decryption(user) }} is typing {{ index < usersTyping.length-1 ? ', ' : '' }}
+      {{ decryption(user) }} is typing... {{ index < usersTyping.length-1 ? ', ' : '' }}
     </template>
   </div>
 </template>
@@ -280,7 +280,7 @@
     margin: auto;
   }
   #messengersContainer {
-    height: calc(100vh - 37px - 72px - 20px - 95px - 15px);
+    height: calc(100vh - 37px - 72px - 40px - 95px - 15px);
     overflow-y: auto;
     scroll-behavior: smooth;
 
@@ -289,6 +289,8 @@
 
   #usersTypingRow {
     text-align: left;
+    padding-top: 5px;
+    padding-left: 5px;
     height: 15px;
     font-size: 12px;
   }
