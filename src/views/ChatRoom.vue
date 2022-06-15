@@ -24,6 +24,10 @@
   const usersTyping = ref([])
   let timer;
 
+  const imageUploadRef = ref()
+  const imageToSend = ref()
+  let imageToSend2 = null
+
 
   function uuidv4() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
@@ -50,7 +54,7 @@
     // Send the msg object as a JSON-formatted string.
     webSocket.send(JSON.stringify(msg));
 
-    if (type == 'message')
+    if (type == 'message' || type == 'image')
       store.commit('ADD_MESSAGE', msg)
   }
 
@@ -92,6 +96,22 @@
       sendText('IS_NOT_TYPING', 'action')
       isTyping = false
     }, 2000);
+  }
+
+  function handleChange($event) {
+    const file = $event.target.files[0]
+
+    var fileReader = new FileReader();
+    fileReader.readAsDataURL(file);
+
+    fileReader.onload = (e) => {
+      imageToSend.value = e.target.result
+    }
+  }
+  async function sendImage() {
+    await sendText(imageToSend.value, 'image')
+    imageToSend.value = null
+    scrollToBottom()
   }
 
   let webSocket
@@ -202,9 +222,18 @@
     </template>
   </div>
 
-  <div id="usersTypingRow">
-    <template v-for="(user, index) in usersTyping" :key="user">
-      {{ decryption(user) }} is typing {{ index < usersTyping.length-1 ? ', ' : '' }}
+  <div id="toolbarRow">
+    <input type="file" accept="image/*" class="icon-button" :value.sync="imageToSend2" @change="handleChange" ref="imageUploadRef" style="display: none;">
+    <div class="icon-button" @click="imageUploadRef.click()">
+      +
+    </div>
+
+    <template v-if="imageToSend" id="imagePreview">
+      <img :src="imageToSend" />
+
+      <button type="button" @click="sendImage">
+        Send
+      </button>
     </template>
   </div>
 
@@ -223,6 +252,12 @@
       SEND
     </button>
   </div>
+
+  <div id="usersTypingRow">
+    <template v-for="(user, index) in usersTyping" :key="user">
+      {{ decryption(user) }} is typing {{ index < usersTyping.length-1 ? ', ' : '' }}
+    </template>
+  </div>
 </template>
 
 <style scoped>
@@ -239,13 +274,13 @@
     text-align: left;
   }
 
-  #messengersContainer, #usersTypingRow, #inputRow {
+  #messengersContainer, #toolbarRow, #usersTypingRow, #inputRow {
     width: 1000px;
     max-width: 100%;
     margin: auto;
   }
   #messengersContainer {
-    height: calc(100vh - 37px - 72px - 15px - 95px);
+    height: calc(100vh - 37px - 72px - 20px - 95px - 15px);
     overflow-y: auto;
     scroll-behavior: smooth;
 
@@ -274,5 +309,42 @@
 
     position: relative;
     top: -41px;
+  }
+
+
+  .icon-button {
+    width: 40px !important;
+    height: 35px !important;
+
+    text-align: center;
+    font-size: 24px;
+    padding-top: 5px;
+
+    border: 1px solid grey;
+    border-radius: 5px;
+
+    margin: 0px !important;
+  }
+
+  #toolbarRow {
+    position: relative;
+    height: 40px !important;
+  }
+
+  #toolbarRow img {
+    position: absolute;
+    top: 1px;
+    left: 50px;
+
+    width: 70px !important;
+    height: 40px !important;
+  }
+  #toolbarRow button {
+    position: absolute;
+    top: 1px;
+    left: 130px;
+
+    width: 70px !important;
+    height: 40px !important;
   }
 </style>

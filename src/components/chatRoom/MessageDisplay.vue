@@ -41,7 +41,12 @@
 <template>
   <div id="messageContainer" :class="{ 'received': !fromActiveUser, 'sent': fromActiveUser }">
     <div id="message">
-      {{ decryption(props.message.text) }}
+      <template v-if="props.message.type == 'image'">
+        <img :src="decryption(props.message.text)" />
+      </template>
+      <template v-else>
+        {{ decryption(props.message.text) }}
+      </template>
     </div>
 
     <div id="author" :style="`color: ${uniqueColour(decryption(props.message.author))}`">
@@ -80,6 +85,10 @@
     border-color: rgb(84 105 212 / 0.5) !important;
   }
 
+  img {
+    width: 100%;
+    height: auto;
+  }
   #message {
     font-size: 22px;
     font-weight: 500;
