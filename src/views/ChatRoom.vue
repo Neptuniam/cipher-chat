@@ -3,7 +3,7 @@
 
   import { useStore } from "vuex";
   import { computed, ref, onUnmounted } from "vue";
-  import { getKey, encryption } from '../services/util.translate.js'
+  import { getKey, encryption, decryption } from '../services/util.translate.js'
 
   import { useWebNotification, useFocus, useWindowFocus } from '@vueuse/core'
 
@@ -20,6 +20,10 @@
   const newMessage = ref('')
   const isFocused = useWindowFocus()
 
+  let isTyping = false
+  const usersTyping = ref([])
+  let timer;
+
 
   function uuidv4() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
@@ -28,7 +32,7 @@
   }
 
   // Send text to all users through the server
-  function sendText(message) {
+  function sendText(message, type='message') {
     if (!message) {
       alert('Please type a message')
       return
@@ -36,7 +40,7 @@
 
     // Construct a msg object containing the data the server needs to process the message from the chat client.
     var msg = {
-      type: 'message',
+      type: type,
       author: encryption(name.value),
       text: encryption(message),
       id:   clientID,
@@ -46,7 +50,8 @@
     // Send the msg object as a JSON-formatted string.
     webSocket.send(JSON.stringify(msg));
 
-    store.commit('ADD_MESSAGE', msg)
+    if (type == 'message')
+      store.commit('ADD_MESSAGE', msg)
   }
 
   function closeSocket() {
@@ -58,6 +63,10 @@
       await sendText(newMessage.value)
       newMessage.value = null
       scrollToBottom()
+
+      clearTimeout(timer);
+      sendText('IS_NOT_TYPING', 'action')
+      isTyping = false
     }
   }
 
@@ -69,6 +78,20 @@
         top: messengersContainer.scrollHeight,
         behavior: 'smooth'
       })
+  }
+
+  function handleInput() {
+    if (!isTyping)
+      sendText('IS_TYPING', 'action')
+
+    isTyping = true
+
+    // once they stop typing for 2 seconds or send, we clear timeout
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      sendText('IS_NOT_TYPING', 'action')
+      isTyping = false
+    }, 2000);
   }
 
   let webSocket
@@ -95,13 +118,25 @@
 
       if (_json.event == 'joined' || _json.event == 'left') {
         await store.commit('SET_ROOM_INFO', _json)
-      } else if (_json && _json.payload && _json.payload.author != name.value) {
-        // Only send notifications if player is not on screen
-        if (!isFocused.value)
-          show()
+      } else if (_json && _json.payload) {
+        if (_json.payload.type == 'action') {
+          const _text = decryption(_json.payload.text)
 
-        await store.commit('ADD_MESSAGE', _json.payload)
-        scrollToBottom()
+          if (_text == 'IS_TYPING') {
+            usersTyping.value.push(_json.payload.author)
+          } else if (_text == 'IS_NOT_TYPING') {
+            const index = usersTyping.value.indexOf(_json.payload.author);
+            if (index > -1)
+              usersTyping.value.splice(index, 1);
+          }
+        } else if (_json.payload.author != name.value) {
+          // Only send notifications if player is not on screen
+          if (!isFocused.value)
+            show()
+
+          await store.commit('ADD_MESSAGE', _json.payload)
+          scrollToBottom()
+        }
       }
     }
   }
@@ -153,12 +188,36 @@
 
   <div id="messengersContainer">
     <template v-for="message in messages">
-      <message-display :message="message" />
+      <div v-if="message.event == 'joined'">
+        <template v-if="message.user != name">
+          {{ message.user}} joined
+        </template>
+      </div>
+      <div v-else-if="message.event == 'left'">
+        {{ message.user}} left
+      </div>
+      <template v-else>
+        <message-display :message="message" />
+      </template>
+    </template>
+  </div>
+
+  <div id="usersTypingRow">
+    <template v-for="(user, index) in usersTyping" :key="user">
+      {{ decryption(user) }} is typing {{ index < usersTyping.length-1 ? ', ' : '' }}
     </template>
   </div>
 
   <div id="inputRow">
-    <textarea rows="3" type="text" placeholder="New Message" v-model="newMessage" @keyup.enter="submitMessage()" ref="messageInput" />
+    <textarea
+      rows="3"
+      type="text"
+      placeholder="New Message"
+      v-model="newMessage"
+      @input="handleInput()"
+      @keyup.enter="submitMessage()"
+      ref="messageInput"
+    />
 
     <button type="button" name="button" @click="submitMessage">
       SEND
@@ -180,17 +239,23 @@
     text-align: left;
   }
 
-  #messengersContainer, #inputRow {
+  #messengersContainer, #usersTypingRow, #inputRow {
     width: 1000px;
     max-width: 100%;
     margin: auto;
   }
   #messengersContainer {
-    height: calc(100vh - 37px - 72px - 95px);
+    height: calc(100vh - 37px - 72px - 15px - 95px);
     overflow-y: auto;
     scroll-behavior: smooth;
 
     position: relative;
+  }
+
+  #usersTypingRow {
+    text-align: left;
+    height: 15px;
+    font-size: 12px;
   }
 
   #inputRow {

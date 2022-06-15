@@ -47,6 +47,8 @@ const store = createStore({
       state.room.room = room.room
       state.room.users = room.users
       state.room.count = room.total_users
+
+      state.messages.push(room)
     },
 
     ADD_MESSAGE(state, message) {
