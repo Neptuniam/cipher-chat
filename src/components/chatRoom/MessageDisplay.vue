@@ -18,6 +18,12 @@
     return 'hsl(' + hash % 360 + ', ' + s + '%, ' + l + '%)'
   }
 
+  function zeroPadding(num, digit=2) {
+		var zero = '';
+		for (var i = 0; i < digit; i++)
+			zero += '0';
+		return (zero + num).slice(-digit);
+	}
   function readableDateTime(time) {
     const _date = new Date(time)
     let _hours = _date.getHours()
@@ -28,7 +34,7 @@
       zone = 'pm'
     }
 
-    return `${_hours}:${_date.getMinutes()}${zone}`
+    return `${_hours}:${zeroPadding(_date.getMinutes())}${zone}`
   }
 </script>
 
