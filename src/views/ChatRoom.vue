@@ -5,7 +5,7 @@
   import { computed, ref, onUnmounted } from "vue";
   import { getKey, encryption, decryption } from '../services/util.translate.js'
 
-  import { useWebNotification, useFocus, useWindowFocus } from '@vueuse/core'
+  import { useWebNotification, useFocus, useWindowFocus, onStartTyping } from '@vueuse/core'
 
 
   const store = useStore();
@@ -187,6 +187,11 @@
   const messageInput = ref()
   const { focused } = useFocus(messageInput, { initialValue: true })
 
+  //  Will auto focus the input field when the user starts typing
+  onStartTyping(() => {
+    if (!messageInput.value.active)
+      messageInput.value.focus()
+  })
 
   onUnmounted(() => {
     webSocket.close();
