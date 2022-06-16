@@ -2,10 +2,10 @@
   import MessageDisplay from '../components/chatRoom/MessageDisplay.vue'
 
   import { useStore } from "vuex";
-  import { computed, ref, onUnmounted } from "vue";
+  import { computed, ref, watch, onUnmounted } from "vue";
   import { getKey, encryption, decryption } from '../services/util.translate.js'
 
-  import { useStorage, useWebNotification, useFocus, useWindowFocus, onStartTyping } from '@vueuse/core'
+  import { useStorage, useWebNotification, useFocus, useWindowFocus, useIdle, onStartTyping } from '@vueuse/core'
 
 
   const store = useStore();
@@ -17,6 +17,9 @@
   const key = ref(store.state.key);
   const messagesMap = useStorage('messagesMap', {})
   const messages = ref(messagesMap.value[roomName.value] || []);
+
+  const containsEncryped = computed(() => !!messages.value.find(_message => _message.isEncrypted))
+  const unlockKey = ref('')
 
   const newMessage = ref('')
   const isFocused = useWindowFocus()
@@ -34,6 +37,14 @@
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
       (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
     );
+  }
+
+  function setRoomEncryptStatus(status) {
+    messages.value.forEach(_message => {
+      _message.isEncrypted = status
+    });
+
+    messagesMap.value[roomName.value] = messages
   }
 
   function pushMessage(message, remember=true) {
@@ -124,6 +135,13 @@
     scrollToBottom()
   }
 
+  function testUnlockKey() {
+    if (unlockKey.value == key.value) {
+      setRoomEncryptStatus(false)
+      unlockKey.value = null
+    }
+  }
+
   let webSocket
   function initConnection() {
     webSocket = new WebSocket(`wss://apps.carterbourette.ca/chat/rooms/${roomName.value}/users/${name.value}`);
@@ -148,6 +166,7 @@
 
       if (_json.event == 'joined' || _json.event == 'left') {
         await store.commit('SET_ROOM_INFO', _json)
+        pushMessage(_json)
       } else if (_json && _json.payload) {
         if (_json.payload.type == 'action') {
           const _text = decryption(_json.payload.text)
@@ -196,6 +215,16 @@
   // Auto focus input field
   const messageInput = ref()
   const { focused } = useFocus(messageInput, { initialValue: true })
+
+
+  const { idle, lastActive } = useIdle(1000 * 60 * 15) // 15 min
+
+  watch(idle, () => {
+    // We auto encrypt all messages once the user goes idle
+    // they can re-enter the key to see the messages again
+    if (idle.value)
+      setRoomEncryptStatus(true)
+  })
 
   //  Will auto focus the input field when the user starts typing
   onStartTyping(() => {
@@ -246,8 +275,16 @@
     <template v-if="imageToSend" id="imagePreview">
       <img :src="imageToSend" />
 
-      <button type="button" @click="sendImage">
+      <button type="button" id="sendImageButton" @click="sendImage">
         Send
+      </button>
+    </template>
+
+    <template v-if="containsEncryped">
+      <input type="text" id="unlockKeyInput" placeholder="Unlock Messages" v-model="unlockKey" @keyup.enter="testUnlockKey()">
+
+      <button type="button" id="unlockKeyButton" @click="testUnlockKey">
+        Submit
       </button>
     </template>
   </div>
@@ -356,12 +393,28 @@
     width: 70px !important;
     height: 40px !important;
   }
-  #toolbarRow button {
+  #toolbarRow #sendImageButton {
     position: absolute;
     top: 1px;
     left: 130px;
 
     width: 70px !important;
+    height: 40px !important;
+  }
+
+  #unlockKeyInput {
+    position: absolute;
+    top: 1px;
+    right: 120px;
+
+    width: 150px;
+  }
+  #unlockKeyButton {
+    position: absolute;
+    top: 1px;
+    right: 5px;
+
+    width: 100px !important;
     height: 40px !important;
   }
 </style>

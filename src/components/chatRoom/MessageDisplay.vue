@@ -42,15 +42,15 @@
   <div id="messageContainer" :class="{ 'received': !fromActiveUser, 'sent': fromActiveUser }">
     <div id="message">
       <template v-if="props.message.type == 'image'">
-        <img :src="decryption(props.message.text)" />
+        <img v-if="!props.message.isEncrypted" :src="decryption(props.message.text)" />
       </template>
       <template v-else>
-        {{ decryption(props.message.text) }}
+        {{ !props.message.isEncrypted ? decryption(props.message.text) : props.message.text }}
       </template>
     </div>
 
     <div id="author" :style="`color: ${uniqueColour(decryption(props.message.author))}`">
-      {{ decryption(props.message.author) }}
+      {{ !props.message.isEncrypted ? decryption(props.message.author) : props.message.text }}
     </div>
 
     <div id="dateTime">
