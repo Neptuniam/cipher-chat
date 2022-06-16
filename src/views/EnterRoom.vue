@@ -75,26 +75,6 @@
     margin-bottom: 20px;
   }
 
-  /* input {
-    margin-bottom: 20px;
-    padding: 5px;
-
-    font-size: 18px;
-  }
-
-  button {
-    width: 315px;
-
-    font-size: 18px;
-    padding: 10px;
-
-    background-color: #1877F2 !important;
-    color: white;
-    border-color: silver;
-
-    border-radius: 5px;
-  } */
-
   #errorMessage {
     color: red;
     margin-top: 40px;

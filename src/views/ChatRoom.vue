@@ -1,5 +1,6 @@
 <script setup>
   import MessageDisplay from '../components/chatRoom/MessageDisplay.vue'
+  import Toolbar from '../components/chatRoom/Toolbar.vue'
 
   import { useStore } from "vuex";
   import { computed, ref, watch, onUnmounted } from "vue";
@@ -18,20 +19,12 @@
   const messagesMap = useStorage('messagesMap', {})
   const messages = ref(messagesMap.value[roomName.value] || []);
 
-  const containsEncryped = computed(() => !!messages.value.find(_message => _message.isEncrypted))
-  const unlockKey = ref('')
-
   const newMessage = ref('')
   const isFocused = useWindowFocus()
 
   let isTyping = false
   const usersTyping = ref([])
   let timer;
-
-  const imageUploadRef = ref()
-  const imageToSend = ref()
-  let imageToSend2 = null
-
 
   function uuidv4() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
@@ -122,28 +115,6 @@
     }, 2000);
   }
 
-  function handleChange($event) {
-    const file = $event.target.files[0]
-
-    var fileReader = new FileReader();
-    fileReader.readAsDataURL(file);
-
-    fileReader.onload = (e) => {
-      imageToSend.value = e.target.result
-    }
-  }
-  async function sendImage() {
-    await sendText(imageToSend.value, 'image')
-    imageToSend.value = null
-    scrollToBottom()
-  }
-
-  function testUnlockKey() {
-    if (unlockKey.value == key.value) {
-      setRoomEncryptStatus(false)
-      unlockKey.value = null
-    }
-  }
 
   function clearChat() {
     messagesMap.value[roomName.value] = []
@@ -274,32 +245,8 @@
     </template>
   </div>
 
-  <div id="toolbarRow">
-    <input type="file" accept="image/*" class="icon-button" :value.sync="imageToSend2" @change="handleChange" ref="imageUploadRef" style="display: none;">
-    <div class="icon-button" @click="imageUploadRef.click()">
-      +
-    </div>
 
-    <template v-if="imageToSend" id="imagePreview">
-      <img :src="imageToSend" />
-
-      <button type="button" id="sendImageButton" @click="sendImage">
-        Send
-      </button>
-    </template>
-
-    <template v-if="containsEncryped">
-      <input type="text" id="unlockKeyInput" placeholder="Unlock Messages" v-model="unlockKey" @keyup.enter="testUnlockKey()">
-
-      <button type="button" id="unlockKeyButton" @click="testUnlockKey">
-        Submit
-      </button>
-    </template>
-
-    <button type="button" id="clearButton" @click="clearChat">
-      Clear
-    </button>
-  </div>
+  <toolbar @clearChat="clearChat" @setRoomEncryptStatus="setRoomEncryptStatus" />
 
   <div id="inputRow">
     <textarea
@@ -375,67 +322,5 @@
 
     position: relative;
     top: -41px;
-  }
-
-
-  .icon-button {
-    width: 40px !important;
-    height: 35px !important;
-
-    text-align: center;
-    font-size: 24px;
-    padding-top: 5px;
-
-    border: 1px solid grey;
-    border-radius: 5px;
-
-    margin: 0px !important;
-  }
-
-  #toolbarRow {
-    position: relative;
-    height: 40px !important;
-  }
-
-  #toolbarRow img {
-    position: absolute;
-    top: 1px;
-    left: 50px;
-
-    width: 70px !important;
-    height: 40px !important;
-  }
-  #toolbarRow #sendImageButton {
-    position: absolute;
-    top: 1px;
-    left: 130px;
-
-    width: 70px !important;
-    height: 40px !important;
-  }
-
-  #unlockKeyInput {
-    position: absolute;
-    top: 1px;
-    right: 230px;
-
-    width: 150px;
-  }
-  #unlockKeyButton {
-    position: absolute;
-    top: 1px;
-    right: 115px;
-
-    width: 100px !important;
-    height: 40px !important;
-  }
-
-  #clearButton {
-    position: absolute;
-    top: 1px;
-    right: 5px;
-
-    width: 100px !important;
-    height: 40px !important;
   }
 </style>

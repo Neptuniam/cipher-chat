@@ -1,4 +1,8 @@
 import { createStore } from "vuex";
+import { useStorage } from '@vueuse/core'
+
+const messagesMap = useStorage('messagesMap', {})
+
 
 const store = createStore({
   state: {
@@ -7,9 +11,11 @@ const store = createStore({
     key: null,
 
 
-    room: {}
+    room: {},
+    // messages: messagesMap.value[this.roomName] || []
   },
   getters:{
+
     totalNotes(state) {
       return state.notes.length;
     }
