@@ -48,7 +48,10 @@
   }
 
   function pushMessage(message, remember=true) {
-    messages.value.push(message)
+    messages.value.push({
+      ...message,
+      'isEncrypted': idle.value
+    })
 
     // Remember the message in localStorage
     if (remember)
@@ -142,6 +145,11 @@
     }
   }
 
+  function clearChat() {
+    messagesMap.value[roomName.value] = []
+    messages.value = []
+  }
+
   let webSocket
   function initConnection() {
     webSocket = new WebSocket(`wss://apps.carterbourette.ca/chat/rooms/${roomName.value}/users/${name.value}`);
@@ -194,6 +202,7 @@
   getKey(key.value)
   const clientID = uuidv4()
   initConnection()
+  setTimeout(() => scrollToBottom(), 1000)
 
   const {
     // isSupported,
@@ -215,7 +224,6 @@
   // Auto focus input field
   const messageInput = ref()
   const { focused } = useFocus(messageInput, { initialValue: true })
-
 
   const { idle, lastActive } = useIdle(1000 * 60 * 15) // 15 min
 
@@ -287,6 +295,10 @@
         Submit
       </button>
     </template>
+
+    <button type="button" id="clearButton" @click="clearChat">
+      Clear
+    </button>
   </div>
 
   <div id="inputRow">
@@ -405,11 +417,20 @@
   #unlockKeyInput {
     position: absolute;
     top: 1px;
-    right: 120px;
+    right: 230px;
 
     width: 150px;
   }
   #unlockKeyButton {
+    position: absolute;
+    top: 1px;
+    right: 115px;
+
+    width: 100px !important;
+    height: 40px !important;
+  }
+
+  #clearButton {
     position: absolute;
     top: 1px;
     right: 5px;
