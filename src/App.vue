@@ -12,6 +12,7 @@ const store = useStore();
 
 const name = computed(() => store.state.name);
 const key = computed(() => store.state.key);
+const getUseDarkMode = computed(() => store.getters.getUseDarkMode);
 
 
 const urlSearchParams = new URLSearchParams(window.location.search);
@@ -25,16 +26,23 @@ if (params.room != null) {
 </script>
 
 <template>
-  <enter-room v-if="!name || !key" />
-  <chat-room v-else />
+  <v-theme-provider :theme="getUseDarkMode ? 'dark' : 'light'" with-background>
+    <enter-room v-if="!name || !key" />
+    <chat-room v-else />
+  </v-theme-provider>
 </template>
 
 <style>
-  html {
+  .v-theme-provider {
     height: 100vh;
     width: 100vw;
     color: #9ca3af;
-    background-color: rgb(17 24 39);
+    /* background-color: rgb(17 24 39); */
+    overflow-y: hidden !important;
+  }
+  html {
+    height: 100vh;
+    width: 100vw;
     overflow-y: hidden !important;
   }
   #app {
@@ -42,11 +50,22 @@ if (params.room != null) {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
-    /* margin-top: 60px; */
   }
 
+  .fullWidth {
+    width: 100%;
+  }
 
-  label {
+  .clickable {
+    cursor: pointer;
+  }
+
+  .v-theme--dark {
+    /* --v-theme-background: 17 24 39 !important;
+    --v-theme-surface: 17 24 39 / 1.5 !important; */
+  }
+
+  /* label {
     font-size: 14px;
     font-weight: 600;
     display: block;
@@ -57,14 +76,10 @@ if (params.room != null) {
     line-height: 28px;
     padding: 8px 16px;
     width: calc(100% - 32px);
-    /* min-height: 44px; */
     border: unset;
     border-radius: 4px;
-    /* outline-color: #9ca3af; */
     background-color: rgb(17 24 39);
     outline: grey solid 1px;
-    /* border-color: white !important; */
-    /* box-shadow: rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(60 66 87 / 16%) 0px 0px 0px 1px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px; */
   }
 
   button {
@@ -79,5 +94,5 @@ if (params.room != null) {
     background-color: rgb(192 132 252/0.5);
     font-weight: 600;
     cursor: pointer;
-  }
+  } */
 </style>

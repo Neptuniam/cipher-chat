@@ -1,5 +1,6 @@
 <script setup>
   import MessageDisplay from '../components/chatRoom/MessageDisplay.vue'
+  import MessageActionBar from '../components/chatRoom/MessageActionBar.vue'
   import Toolbar from '../components/chatRoom/Toolbar.vue'
 
   import { useStore } from "vuex";
@@ -198,7 +199,7 @@
   const messageInput = ref()
   const { focused } = useFocus(messageInput, { initialValue: true })
 
-  const { idle, lastActive } = useIdle(1000 * 60 * 15) // 15 min
+  const { idle, lastActive } = useIdle(1000 * 60 * 30) // 30 min
 
   watch(idle, () => {
     // We auto encrypt all messages once the user goes idle
@@ -219,56 +220,53 @@
 </script>
 
 <template>
-  <div id="roomInfo">
-    In room ({{ room.room }})
+  <v-layout>
+    <toolbar @clearChat="clearChat" @setRoomEncryptStatus="setRoomEncryptStatus" />
 
-    <ol>
-      <li v-for="user in room.users">
-        {{ user }}
-      </li>
-    </ol>
-  </div>
-
-  <div id="messengersContainer">
-    <template v-for="message in messages">
-      <div v-if="message.event == 'joined'">
-        <template v-if="message.user != name">
-          {{ message.user}} joined
+    <v-main theme="dark">
+      <div id="messengersContainer">
+        <template v-for="message in messages">
+          <div v-if="message.event == 'joined'">
+            <template v-if="message.user != name">
+              {{ message.user}} joined
+            </template>
+          </div>
+          <div v-else-if="message.event == 'left'">
+            {{ message.user}} left
+          </div>
+          <template v-else>
+            <message-display :message="message" />
+          </template>
         </template>
       </div>
-      <div v-else-if="message.event == 'left'">
-        {{ message.user}} left
+
+
+      <message-action-bar @setRoomEncryptStatus="setRoomEncryptStatus" @sendText="sendText" />
+
+      <v-row id="inputRow">
+        <v-textarea
+          label="New Message"
+          outlined
+          rows="3"
+          row-height="15"
+          v-model="newMessage"
+          @input="handleInput()"
+          @keyup.enter="submitMessage()"
+          ref="messageInput"
+        />
+
+        <v-btn color="primary" @click="submitMessage">
+          SEND
+        </v-btn>
+      </v-row>
+
+      <div id="usersTypingRow">
+        <template v-for="(user, index) in usersTyping" :key="user">
+          {{ decryption(user) }} is typing... {{ index < usersTyping.length-1 ? ', ' : '' }}
+        </template>
       </div>
-      <template v-else>
-        <message-display :message="message" />
-      </template>
-    </template>
-  </div>
-
-
-  <toolbar @clearChat="clearChat" @setRoomEncryptStatus="setRoomEncryptStatus" @sendText="sendText" />
-
-  <div id="inputRow">
-    <textarea
-      rows="3"
-      type="text"
-      placeholder="New Message"
-      v-model="newMessage"
-      @input="handleInput()"
-      @keyup.enter="submitMessage()"
-      ref="messageInput"
-    />
-
-    <button type="button" name="button" @click="submitMessage">
-      SEND
-    </button>
-  </div>
-
-  <div id="usersTypingRow">
-    <template v-for="(user, index) in usersTyping" :key="user">
-      {{ decryption(user) }} is typing... {{ index < usersTyping.length-1 ? ', ' : '' }}
-    </template>
-  </div>
+    </v-main>
+  </v-layout>
 </template>
 
 <style scoped>
@@ -291,7 +289,7 @@
     margin: auto;
   }
   #messengersContainer {
-    height: calc(100vh - 37px - 40px - 95px - 10px);
+    height: calc(100vh - 37px - 40px - 114px - 10px);
     overflow-y: auto;
     scroll-behavior: smooth;
 
@@ -302,25 +300,26 @@
     text-align: left;
     padding-top: 5px;
     padding-left: 5px;
-    height: 15px;
+    height: 30px;
     font-size: 12px;
   }
 
   #inputRow {
     margin-top: 15px;
-    height: 95px !important;
+    height: 114px !important;
   }
-  #inputRow textarea {
+  #inputRow .v-input {
     font-size: 18px;
-    width: calc(100% - 130px);
+    /* width: calc(100% - 130px); */
     margin-right: 10px;
     padding: 5px;
   }
   #inputRow button {
-    width: 100px;
-    height: 95px;
+    width: 114px;
+    height: 114px;
 
     position: relative;
-    top: -41px;
+    top: 5px;
+    /* top: -41px; */
   }
 </style>

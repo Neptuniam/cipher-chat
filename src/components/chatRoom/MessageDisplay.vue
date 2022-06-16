@@ -61,7 +61,8 @@
 
 <style scoped>
   #messageContainer {
-    max-width: 500px;
+    width: 100%;
+    max-width: 520px;
     /* width: calc(100% - 10px); */
     /* height: 300px; */
 
@@ -78,7 +79,7 @@
 
   #messageContainer.received {
     margin: 10px auto 10px 0px;
-    border-color: #00A400 !important;
+    border-color: #7ec699 !important;
   }
   #messageContainer.sent {
     margin: 10px 0px 10px auto;

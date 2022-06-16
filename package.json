@@ -1,19 +1,25 @@
 {
   "name": "encrypted-chat",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "scripts": {
-    "dev": "vite",
     "build": "vite build --base=/cipher-chat/",
+    "dev": "vite",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mdi/font": "5.9.55",
     "@vueuse/core": "^8.6.0",
+    "roboto-fontface": "*",
     "vue": "^3.2.25",
-    "vuex": "^4.0.0"
+    "vuetify": "npm:@vuetify/nightly@next",
+    "vuex": "^4.0.0",
+    "webfontloader": "^1.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.3.3",
-    "vite": "^2.9.9"
+    "vite": "^2.9.9",
+    "vue-cli-plugin-vuetify": "~2.5.1",
+    "webpack-plugin-vuetify": "^2.0.0-alpha.0"
   }
 }

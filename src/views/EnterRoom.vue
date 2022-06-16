@@ -34,24 +34,32 @@
   <h3>Please enter your custom encryption key</h3>
 
   <form>
-    <label>Your username</label>
-    <input type="text" v-model="name" @keyup.enter="submitForm()">
+    <v-text-field
+      label="Your username"
+      variant="outlined"
+      v-model="name"
+      @keyup.enter="submitForm()"
+    />
+
+    <v-text-field
+      label="Room Name"
+      variant="outlined"
+      v-model="roomName"
+      @keyup.enter="submitForm()"
+    />
+
+    <v-text-field
+      label="Encryption Key"
+      variant="outlined"
+      v-model="key"
+      @keyup.enter="submitForm()"
+    />
 
     <br>
 
-    <label>Room name</label>
-    <input type="text" v-model="roomName" @keyup.enter="submitForm()">
-
-    <br>
-
-    <label>Encryption Key</label>
-    <input type="password" v-model="key" @keyup.enter="submitForm()">
-
-    <br><br>
-
-    <button type="button" name="button" @click="submitForm()">
+    <v-btn color="primary" class="fullWidth" @click="submitForm()">
       Submit
-    </button>
+    </v-btn>
   </form>
 
   <div id="errorMessage">
@@ -60,6 +68,9 @@
 </template>
 
 <style scoped>
+  h1 {
+    margin-top: 10px;
+  }
   h3 {
     margin-bottom: 40px;
   }
@@ -70,9 +81,8 @@
     max-width: 100%;
     margin: auto;
   }
-
-  input {
-    margin-bottom: 20px;
+  form button {
+    height: 50px !important;
   }
 
   #errorMessage {

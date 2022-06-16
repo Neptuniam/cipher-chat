@@ -1,157 +1,63 @@
 <script setup>
   import { useStore } from "vuex";
-  import { ref, computed } from "vue";
-  import { useStorage, useWebNotification, useFocus, useWindowFocus, useIdle, onStartTyping } from '@vueuse/core'
+  import { ref } from "vue";
+  import { decryption } from '../../services/util.translate.js'
 
   const store = useStore();
 
+  const name = ref(store.state.name);
   const roomName = ref(store.state.roomName);
-  const key = ref(store.state.key);
+  const room = ref(store.state.room);
 
-  const messagesMap = useStorage('messagesMap', {})
-  const messages = ref(messagesMap.value[roomName.value] || []);
-
-  const imageUploadRef = ref()
-  const imageToSend = ref()
-  let imageToSend2 = null
-
-  const unlockKey = ref('')
-  const containsEncryped = computed(() => !!messages.value.find(_message => _message.isEncrypted))
-
-  const emit = defineEmits(['setRoomEncryptStatus', 'sendText'])
-
-
-  function handleChange($event) {
-    const file = $event.target.files[0]
-
-    var fileReader = new FileReader();
-    fileReader.readAsDataURL(file);
-
-    fileReader.onload = (e) => {
-      imageToSend.value = e.target.result
-    }
-  }
-  async function sendImage() {
-    // await sendText(imageToSend.value, 'image')
-    emit('sendText', imageToSend.value, 'image')
-    imageToSend.value = null
-
+  function toggleDarkMode() {
+    store.dispatch('toggleTheme')
   }
 
-  function testUnlockKey() {
-    if (unlockKey.value == key.value) {
-      // setRoomEncryptStatus(false)
-      emit('setRoomEncryptStatus', false)
-
-      unlockKey.value = null
-    }
-  }
-
-  document.onpaste = function(event){
-    var items = (event.clipboardData || event.originalEvent.clipboardData).items;
-    for (let index in items) {
-      var item = items[index];
-      if (item.kind === 'file') {
-        var blob = item.getAsFile();
-        var reader = new FileReader();
-        reader.onload = function(event) {
-          imageToSend.value = event.target.result
-        }; // data url!
-        reader.readAsDataURL(blob);
-      }
-    }
+  function leaveRoom() {
+    store.commit('SAVE_PROFILE', {
+      name: name.value,
+      roomName: roomName.value,
+      key: null
+    })
   }
 </script>
 
 <template>
-  <div id="toolbarRow">
-    <input type="file" accept="image/*" class="icon-button" :value.sync="imageToSend2" @change="handleChange" ref="imageUploadRef" style="display: none;">
-    <div class="icon-button" @click="imageUploadRef.click()">
-      +
-    </div>
+  <v-navigation-drawer :expand-on-hover="true" :rail="true">
+   <v-list>
+     <v-list-item
+       :title="''+room.room"
+     ></v-list-item>
 
-    <template v-if="imageToSend" id="imagePreview">
-      <img :src="imageToSend" />
+     <div v-for="(user, index) in room.users" style="text-align: left; padding-left: 5px;">
+       {{ index+1 }}. {{ user }}
+     </div>
+   </v-list>
 
-      <button type="button" id="sendImageButton" @click="sendImage">
-        Send
-      </button>
+   <v-divider></v-divider>
+
+   <v-list nav>
+     <v-list-item prepend-icon="mdi-close" title="Clear Chat" class="clickable" style="text-align: left" @click="$emit('clearChat')" />
+     <v-list-item prepend-icon="mdi-lock-plus" title="Encrypt Chat" class="clickable" style="text-align: left" @click="$emit('setRoomEncryptStatus', true)" />
+
+     <br>
+     <v-list-item prepend-icon="mdi-theme-light-dark" title="Toggle Dark Mode" class="clickable" style="text-align: left" @click="toggleDarkMode" />
+   </v-list>
+
+
+     <template v-slot:append>
+      <div class="pa-2">
+        <v-btn block color="primary" @click="leaveRoom">
+          Exit
+        </v-btn>
+      </div>
     </template>
-
-    <template v-if="containsEncryped">
-      <input type="text" id="unlockKeyInput" placeholder="Unlock Messages" v-model="unlockKey" @keyup.enter="testUnlockKey()">
-
-      <button type="button" id="unlockKeyButton" @click="testUnlockKey">
-        Submit
-      </button>
-    </template>
-
-    <button type="button" id="clearButton" @click="$emit('clearChat')">
-      Clear
-    </button>
-  </div>
+ </v-navigation-drawer>
 </template>
 
-<style scoped>
-  .icon-button {
-    width: 40px !important;
-    height: 35px !important;
-
-    text-align: center;
-    font-size: 24px;
-    padding-top: 5px;
-
-    border: 1px solid grey;
-    border-radius: 5px;
-
-    margin: 0px !important;
-    cursor: pointer;
-  }
-
-  #toolbarRow {
-    position: relative;
-    height: 40px !important;
-  }
-
-  #toolbarRow img {
-    position: absolute;
-    top: 1px;
-    left: 50px;
-
-    width: 70px !important;
-    height: 40px !important;
-  }
-  #toolbarRow #sendImageButton {
-    position: absolute;
-    top: 1px;
-    left: 130px;
-
-    width: 70px !important;
-    height: 40px !important;
-  }
-
-  #unlockKeyInput {
-    position: absolute;
-    top: 1px;
-    right: 230px;
-
-    width: 150px;
-  }
-  #unlockKeyButton {
-    position: absolute;
-    top: 1px;
-    right: 115px;
-
-    width: 100px !important;
-    height: 40px !important;
-  }
-
-  #clearButton {
-    position: absolute;
-    top: 1px;
-    right: 5px;
-
-    width: 100px !important;
-    height: 40px !important;
+<style>
+  nav {
+    transform: none !important;
+    height: 100%;
   }
 </style>
