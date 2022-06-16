@@ -5,7 +5,7 @@
   import { computed, ref, onUnmounted } from "vue";
   import { getKey, encryption, decryption } from '../services/util.translate.js'
 
-  import { useWebNotification, useFocus, useWindowFocus, onStartTyping } from '@vueuse/core'
+  import { useStorage, useWebNotification, useFocus, useWindowFocus, onStartTyping } from '@vueuse/core'
 
 
   const store = useStore();
@@ -15,7 +15,8 @@
   const name = ref(store.state.name);
   const roomName = ref(store.state.roomName);
   const key = ref(store.state.key);
-  const messages = computed(() => store.state.messages);
+  const messagesMap = useStorage('messagesMap', {})
+  const messages = ref(messagesMap.value[roomName.value] || []);
 
   const newMessage = ref('')
   const isFocused = useWindowFocus()
@@ -35,6 +36,14 @@
     );
   }
 
+  function pushMessage(message, remember=true) {
+    messages.value.push(message)
+
+    // Remember the message in localStorage
+    if (remember)
+      messagesMap.value[roomName.value] = messages
+  }
+
   // Send text to all users through the server
   function sendText(message, type='message') {
     if (!message) {
@@ -45,6 +54,7 @@
     // Construct a msg object containing the data the server needs to process the message from the chat client.
     var msg = {
       type: type,
+      room: encryption(roomName.value),
       author: encryption(name.value),
       text: encryption(message),
       id:   clientID,
@@ -55,7 +65,7 @@
     webSocket.send(JSON.stringify(msg));
 
     if (type == 'message' || type == 'image')
-      store.commit('ADD_MESSAGE', msg)
+      pushMessage(msg)
   }
 
   function closeSocket() {
@@ -154,7 +164,7 @@
           if (!isFocused.value)
             show()
 
-          await store.commit('ADD_MESSAGE', _json.payload)
+          await pushMessage(_json.payload)
           scrollToBottom()
         }
       }
