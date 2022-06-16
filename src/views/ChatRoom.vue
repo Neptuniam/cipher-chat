@@ -229,8 +229,6 @@
     </ol>
   </div>
 
-  <h1>Welcome, {{ name }}</h1>
-
   <div id="messengersContainer">
     <template v-for="message in messages">
       <div v-if="message.event == 'joined'">
@@ -293,7 +291,7 @@
     margin: auto;
   }
   #messengersContainer {
-    height: calc(100vh - 37px - 72px - 40px - 95px - 15px);
+    height: calc(100vh - 37px - 40px - 95px - 10px);
     overflow-y: auto;
     scroll-behavior: smooth;
 
