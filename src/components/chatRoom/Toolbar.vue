@@ -18,7 +18,7 @@
   const unlockKey = ref('')
   const containsEncryped = computed(() => !!messages.value.find(_message => _message.isEncrypted))
 
-  const emit = defineEmits(['setRoomEncryptStatus'])
+  const emit = defineEmits(['setRoomEncryptStatus', 'sendText'])
 
 
   function handleChange($event) {
@@ -32,9 +32,10 @@
     }
   }
   async function sendImage() {
-    await sendText(imageToSend.value, 'image')
+    // await sendText(imageToSend.value, 'image')
+    emit('sendText', imageToSend.value, 'image')
     imageToSend.value = null
-    scrollToBottom()
+
   }
 
   function testUnlockKey() {
@@ -43,6 +44,21 @@
       emit('setRoomEncryptStatus', false)
 
       unlockKey.value = null
+    }
+  }
+
+  document.onpaste = function(event){
+    var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+    for (let index in items) {
+      var item = items[index];
+      if (item.kind === 'file') {
+        var blob = item.getAsFile();
+        var reader = new FileReader();
+        reader.onload = function(event) {
+          imageToSend.value = event.target.result
+        }; // data url!
+        reader.readAsDataURL(blob);
+      }
     }
   }
 </script>

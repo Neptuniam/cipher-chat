@@ -52,7 +52,7 @@
   }
 
   // Send text to all users through the server
-  function sendText(message, type='message') {
+  async function sendText(message, type='message') {
     if (!message) {
       alert('Please type a message')
       return
@@ -69,10 +69,12 @@
     };
 
     // Send the msg object as a JSON-formatted string.
-    webSocket.send(JSON.stringify(msg));
+    await webSocket.send(JSON.stringify(msg));
 
     if (type == 'message' || type == 'image')
       pushMessage(msg)
+
+    scrollToBottom()
   }
 
   function closeSocket() {
@@ -246,7 +248,7 @@
   </div>
 
 
-  <toolbar @clearChat="clearChat" @setRoomEncryptStatus="setRoomEncryptStatus" />
+  <toolbar @clearChat="clearChat" @setRoomEncryptStatus="setRoomEncryptStatus" @sendText="sendText" />
 
   <div id="inputRow">
     <textarea
