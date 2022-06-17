@@ -1,27 +1,23 @@
 <script setup>
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import EnterRoom from './views/EnterRoom.vue'
-import ChatRoom from './views/ChatRoom.vue'
+import EnterRoom from "./views/EnterRoom.vue"
+import ChatRoom from "./views/ChatRoom.vue"
 
+import { useStore } from "vuex"
+import { computed } from "vue"
 
-import { useStore } from "vuex";
-import { computed } from "vue";
+const store = useStore()
 
-const store = useStore();
+const name = computed(() => store.state.name)
+const key = computed(() => store.state.key)
+const getUseDarkMode = computed(() => store.getters.getUseDarkMode)
 
-const name = computed(() => store.state.name);
-const key = computed(() => store.state.key);
-const getUseDarkMode = computed(() => store.getters.getUseDarkMode);
-
-
-const urlSearchParams = new URLSearchParams(window.location.search);
-const params = Object.fromEntries(urlSearchParams.entries());
+const urlSearchParams = new URLSearchParams(window.location.search)
+const params = Object.fromEntries(urlSearchParams.entries())
 
 if (params.room != null) {
-  store.commit('SAVE_PROFILE', {
-    roomName: params.room
-  });
+  store.commit("SAVE_PROFILE", {
+    roomName: params.room,
+  })
 }
 </script>
 
@@ -33,38 +29,32 @@ if (params.room != null) {
 </template>
 
 <style>
-  .v-theme-provider {
-    height: 100vh;
-    width: 100vw;
-    color: #9ca3af;
-    /* background-color: rgb(17 24 39); */
-    overflow-y: hidden !important;
-  }
-  html {
-    height: 100vh;
-    width: 100vw;
-    overflow-y: hidden !important;
-  }
-  #app {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-  }
+.v-theme-provider {
+  height: 100vh;
+  width: 100vw;
+  color: #9ca3af;
+  /* background-color: rgb(17 24 39); */
+  overflow-y: hidden !important;
+}
 
-  .fullWidth {
-    width: 100%;
-  }
+html {
+  height: 100vh;
+  width: 100vw;
+  overflow-y: hidden !important;
+}
 
-  .clickable {
-    cursor: pointer;
-  }
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+}
 
-  .v-theme--dark {
-    /* --v-theme-background: 33 33 33 !important;
-    --v-theme-surface: 55 55 55 !important; */
+.fullWidth {
+  width: 100%;
+}
 
-    /* --v-theme-background: 17 24 39 !important;
-    --v-theme-surface: 17 24 39 / 1.5 !important; */
-  }
+.clickable {
+  cursor: pointer;
+}
 </style>

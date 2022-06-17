@@ -1,56 +1,75 @@
 <script setup>
-  import { useStore } from "vuex";
-  import { ref } from "vue";
-  import { decryption } from '../../services/util.translate.js'
+import { useStore } from "vuex"
+import { ref } from "vue"
+import { decryption } from "../../services/util.translate.js"
 
-  const store = useStore();
+const store = useStore()
 
-  const props = defineProps(['message'])
+// TODO
+// eslint-disable-next-line vue/require-prop-types
+const props = defineProps(["message"])
 
-  const name = ref(store.state.name);
+const name = ref(store.state.name)
 
-  const fromActiveUser = name.value == decryption(props.message.author)
+const fromActiveUser = name.value == decryption(props.message.author)
 
-  function uniqueColour(name, s=30, l=40) {
-    let hash = 0
-    for (var i = 0; i < name.length; i++)
-      hash = name.charCodeAt(i) + ((hash << 5) - hash)
-    return 'hsl(' + hash % 360 + ', ' + s + '%, ' + l + '%)'
+function uniqueColour(name, s = 30, l = 40) {
+  let hash = 0
+  for (var i = 0; i < name.length; i++)
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  return "hsl(" + (hash % 360) + ", " + s + "%, " + l + "%)"
+}
+
+function zeroPadding(num, digit = 2) {
+  var zero = ""
+  for (var i = 0; i < digit; i++) zero += "0"
+  return (zero + num).slice(-digit)
+}
+
+function readableDateTime(time) {
+  const _date = new Date(time)
+  let _hours = _date.getHours()
+  let zone = "am"
+
+  if (_hours > 12) {
+    _hours -= 12
+    zone = "pm"
   }
 
-  function zeroPadding(num, digit=2) {
-		var zero = '';
-		for (var i = 0; i < digit; i++)
-			zero += '0';
-		return (zero + num).slice(-digit);
-	}
-  function readableDateTime(time) {
-    const _date = new Date(time)
-    let _hours = _date.getHours()
-    let zone = 'am'
-
-    if (_hours > 12) {
-      _hours -= 12
-      zone = 'pm'
-    }
-
-    return `${_hours}:${zeroPadding(_date.getMinutes())}${zone}`
-  }
+  return `${_hours}:${zeroPadding(_date.getMinutes())}${zone}`
+}
 </script>
 
 <template>
-  <div id="messageContainer" :class="{ 'received': !fromActiveUser, 'sent': fromActiveUser }">
+  <div
+    id="messageContainer"
+    :class="{ received: !fromActiveUser, sent: fromActiveUser }"
+  >
     <div id="message">
       <template v-if="props.message.type == 'image'">
-        <img v-if="!props.message.isEncrypted" :src="decryption(props.message.text)" />
+        <img
+          v-if="!props.message.isEncrypted"
+          :src="decryption(props.message.text)"
+        />
       </template>
       <template v-else>
-        {{ !props.message.isEncrypted ? decryption(props.message.text) : props.message.text }}
+        {{
+          !props.message.isEncrypted
+            ? decryption(props.message.text)
+            : props.message.text
+        }}
       </template>
     </div>
 
-    <div id="author" :style="`color: ${uniqueColour(decryption(props.message.author))}`">
-      {{ !props.message.isEncrypted ? decryption(props.message.author) : props.message.text }}
+    <div
+      id="author"
+      :style="`color: ${uniqueColour(decryption(props.message.author))}`"
+    >
+      {{
+        !props.message.isEncrypted
+          ? decryption(props.message.author)
+          : props.message.text
+      }}
     </div>
 
     <div id="dateTime">
@@ -60,49 +79,49 @@
 </template>
 
 <style scoped>
-  #messageContainer {
-    width: 100%;
-    max-width: 520px;
-    /* width: calc(100% - 10px); */
-    /* height: 300px; */
+#messageContainer {
+  width: 100%;
+  max-width: 520px;
+  /* width: calc(100% - 10px); */
+  /* height: 300px; */
 
-    border: 1px solid gray;
-    border-radius: 5px;
+  border: 1px solid gray;
+  border-radius: 5px;
 
-    margin: 10px;
-    padding: 5px;
+  margin: 10px;
+  padding: 5px;
 
-    text-align: left;
+  text-align: left;
 
-    position: relative;
-  }
+  position: relative;
+}
 
-  #messageContainer.received {
-    margin: 10px auto 10px 0px;
-    border-color: #7ec699 !important;
-  }
-  #messageContainer.sent {
-    margin: 10px 0px 10px auto;
-    border-color: rgb(84 105 212 / 0.5) !important;
-  }
+#messageContainer.received {
+  margin: 10px auto 10px 0px;
+  border-color: #7ec699 !important;
+}
+#messageContainer.sent {
+  margin: 10px 0px 10px auto;
+  border-color: rgb(84 105 212 / 0.5) !important;
+}
 
-  img {
-    width: 100%;
-    height: auto;
-  }
-  #message {
-    font-size: 22px;
-    font-weight: 500;
-  }
+img {
+  width: 100%;
+  height: auto;
+}
+#message {
+  font-size: 22px;
+  font-weight: 500;
+}
 
-  #author {
-    font-size: 14px;
-    margin-top: 20px
-  }
+#author {
+  font-size: 14px;
+  margin-top: 20px;
+}
 
-  #dateTime {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-  }
+#dateTime {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+}
 </style>
