@@ -237,7 +237,7 @@
       </div>
 
 
-      <message-action-bar @setRoomEncryptStatus="setRoomEncryptStatus" />
+      <message-action-bar @setRoomEncryptStatus="setRoomEncryptStatus" @sendText="sendText" />
 
       <v-row id="inputRow">
         <v-textarea
