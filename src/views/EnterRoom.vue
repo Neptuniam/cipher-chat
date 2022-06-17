@@ -7,6 +7,7 @@
   const name = useStorage('name', '')
   const roomName = ref(store.state.roomName || '')
   const key = ref(store.state.key || '')
+  const showKey = ref(false)
   const error = ref('')
 
   function submitForm() {
@@ -53,6 +54,9 @@
       variant="outlined"
       v-model="key"
       @keyup.enter="submitForm()"
+      :type="showKey ? 'text' : 'password'"
+      :append-icon="showKey ? 'mdi-eye-off' : 'mdi-eye'"
+      @click:append="showKey = !showKey"
     />
 
     <br>

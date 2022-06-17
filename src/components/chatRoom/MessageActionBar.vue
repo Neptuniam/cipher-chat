@@ -1,21 +1,20 @@
 <script setup>
   import { useStore } from "vuex";
   import { ref, computed } from "vue";
-  import { useStorage, useWebNotification, useFocus, useWindowFocus, useIdle, onStartTyping } from '@vueuse/core'
 
   const store = useStore();
 
   const roomName = ref(store.state.roomName);
   const key = ref(store.state.key);
 
-  const messagesMap = useStorage('messagesMap', {})
-  const messages = ref(messagesMap.value[roomName.value] || []);
+  const messages = computed(() => store.getters.getMessages);
 
   const imageUploadRef = ref()
   const imageToSend = ref()
   let imageToSend2 = null
 
   const unlockKey = ref('')
+  const showKey = ref(false)
   const containsEncryped = computed(() => !!messages.value.find(_message => _message.isEncrypted))
 
   const emit = defineEmits(['setRoomEncryptStatus', 'sendText'])
@@ -82,12 +81,14 @@
     </template>
 
     <div v-if="containsEncryped" id="unlockKeyForm">
-      <!-- <input type="text" id="unlockKeyInput" placeholder="Unlock Messages" v-model="unlockKey" @keyup.enter="testUnlockKey()"> -->
       <v-text-field id="unlockKeyInput"
         label="Unlock Messages"
         required
         v-model="unlockKey"
         @keyup.enter="testUnlockKey()"
+        :type="showKey ? 'text' : 'password'"
+        :append-icon="showKey ? 'mdi-eye-off' : 'mdi-eye'"
+        @click:append="showKey = !showKey"
       />
 
       <v-btn id="unlockKeyButton" color="secondary" @click="testUnlockKey">
@@ -148,7 +149,7 @@
     top: 1px;
     right: 130px;
 
-    width: 175px;
+    width: 225px;
   }
   #unlockKeyButton {
     position: absolute;

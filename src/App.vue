@@ -61,38 +61,10 @@ if (params.room != null) {
   }
 
   .v-theme--dark {
+    /* --v-theme-background: 33 33 33 !important;
+    --v-theme-surface: 55 55 55 !important; */
+
     /* --v-theme-background: 17 24 39 !important;
     --v-theme-surface: 17 24 39 / 1.5 !important; */
   }
-
-  /* label {
-    font-size: 14px;
-    font-weight: 600;
-    display: block;
-  }
-  input, textarea {
-    color: rgb(200, 200, 200);
-    font-size: 16px;
-    line-height: 28px;
-    padding: 8px 16px;
-    width: calc(100% - 32px);
-    border: unset;
-    border-radius: 4px;
-    background-color: rgb(17 24 39);
-    outline: grey solid 1px;
-  }
-
-  button {
-    font-size: 18px;
-    padding: 10px;
-
-    color: rgb(220, 220, 220);
-
-    width: 100%;
-    border-radius: 5px;
-
-    background-color: rgb(192 132 252/0.5);
-    font-weight: 600;
-    cursor: pointer;
-  } */
 </style>

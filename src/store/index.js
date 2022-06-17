@@ -1,20 +1,21 @@
 import { createStore } from "vuex";
 import { useStorage } from '@vueuse/core'
 
+const messagesMap = useStorage('messagesMap', {})
 const useDarkMode = useStorage('useDarkMode', true)
-
 
 const store = createStore({
   state: {
     name: null,
     roomName: null,
     key: 'test',
-
-
     room: {},
-    // messages: messagesMap.value[this.roomName] || []
   },
-  getters:{
+  getters: {
+    getMessages(state) {
+      return messagesMap.value[state.roomName] || [];
+    },
+
     getUseDarkMode(state) {
       return useDarkMode.value;
     }
@@ -32,9 +33,18 @@ const store = createStore({
       state.room.room = room.room
       state.room.users = room.users
       state.room.count = room.total_users
+    },
 
-      // state.messages.push(room)
-    }
+    PUSH_MESSAGE(state, message) {
+      let _messages = messagesMap.value[state.roomName] || []
+
+      _messages.push(message)
+
+      messagesMap.value[state.roomName] = _messages
+    },
+    CLEAR_CHAT(state) {
+      messagesMap.value[state.roomName] = []
+    },
   },
   actions:{
     saveNote({ commit }, profile) {

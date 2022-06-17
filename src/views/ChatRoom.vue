@@ -17,8 +17,9 @@
   const name = ref(store.state.name);
   const roomName = ref(store.state.roomName);
   const key = ref(store.state.key);
+
   const messagesMap = useStorage('messagesMap', {})
-  const messages = ref(messagesMap.value[roomName.value] || []);
+  const messages = computed(() => store.getters.getMessages);
 
   const newMessage = ref('')
   const isFocused = useWindowFocus()
@@ -41,15 +42,11 @@
     messagesMap.value[roomName.value] = messages
   }
 
-  function pushMessage(message, remember=true) {
-    messages.value.push({
+  function pushMessage(message) {
+    store.commit('PUSH_MESSAGE', {
       ...message,
       'isEncrypted': idle.value
     })
-
-    // Remember the message in localStorage
-    if (remember)
-      messagesMap.value[roomName.value] = messages
   }
 
   // Send text to all users through the server
@@ -94,6 +91,11 @@
     }
   }
 
+  function attemptNotification() {
+    // Only send notifications if player is not on screen
+    if (!isFocused.value)
+      show()
+  }
   function scrollToBottom() {
     let messengersContainer = document.getElementById("messengersContainer");
 
@@ -116,12 +118,6 @@
       sendText('IS_NOT_TYPING', 'action')
       isTyping = false
     }, 2000);
-  }
-
-
-  function clearChat() {
-    messagesMap.value[roomName.value] = []
-    messages.value = []
   }
 
   let webSocket
@@ -149,6 +145,7 @@
       if (_json.event == 'joined' || _json.event == 'left') {
         await store.commit('SET_ROOM_INFO', _json)
         pushMessage(_json)
+        attemptNotification()
       } else if (_json && _json.payload) {
         if (_json.payload.type == 'action') {
           const _text = decryption(_json.payload.text)
@@ -161,9 +158,7 @@
               usersTyping.value.splice(index, 1);
           }
         } else if (_json.payload.author != name.value) {
-          // Only send notifications if player is not on screen
-          if (!isFocused.value)
-            show()
+          attemptNotification()
 
           await pushMessage(_json.payload)
           scrollToBottom()
@@ -176,6 +171,7 @@
   getKey(key.value)
   const clientID = uuidv4()
   initConnection()
+  setRoomEncryptStatus(false)
   setTimeout(() => scrollToBottom(), 1000)
 
   const {
@@ -221,7 +217,7 @@
 
 <template>
   <v-layout>
-    <toolbar @clearChat="clearChat" @setRoomEncryptStatus="setRoomEncryptStatus" />
+    <toolbar @setRoomEncryptStatus="setRoomEncryptStatus" />
 
     <v-main theme="dark">
       <div id="messengersContainer">
@@ -241,13 +237,13 @@
       </div>
 
 
-      <message-action-bar @setRoomEncryptStatus="setRoomEncryptStatus" @sendText="sendText" />
+      <message-action-bar @setRoomEncryptStatus="setRoomEncryptStatus" />
 
       <v-row id="inputRow">
         <v-textarea
           label="New Message"
           outlined
-          rows="3"
+          rows="2"
           row-height="15"
           v-model="newMessage"
           @input="handleInput()"
@@ -284,16 +280,22 @@
   }
 
   #messengersContainer, #toolbarRow, #usersTypingRow, #inputRow {
-    width: 1000px;
+    width: 1020px;
     max-width: 100%;
     margin: auto;
+    padding: 0px 10px;
   }
   #messengersContainer {
-    height: calc(100vh - 37px - 40px - 114px - 10px);
+    height: calc(100vh - 37px - 40px - 84px - 10px);
     overflow-y: auto;
     scroll-behavior: smooth;
 
     position: relative;
+  }
+  @media only screen and (max-width: 940px) {
+    #messengersContainer {
+      height: calc(100vh - 64px - 37px - 40px - 84px - 10px);
+    }
   }
 
   #usersTypingRow {
@@ -315,8 +317,8 @@
     padding: 5px;
   }
   #inputRow button {
-    width: 114px;
-    height: 114px;
+    width: 84px;
+    height: 84px;
 
     position: relative;
     top: 5px;
