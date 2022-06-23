@@ -1,32 +1,33 @@
 <script setup>
-  import { ref } from 'vue'
-  import { useStore } from "vuex";
-  import { useStorage } from '@vueuse/core'
+import { ref } from "vue"
+import { useStore } from "vuex"
+import { useStorage } from "@vueuse/core"
 
-  const store = useStore();
-  const name = useStorage('name', '')
-  const roomName = ref(store.state.roomName || '')
-  const key = ref(store.state.key || '')
-  const showKey = ref(false)
-  const error = ref('')
+const store = useStore()
+const name = useStorage("name", "")
 
-  function submitForm() {
-    error.value = null
+const roomName = ref(store.state.roomName || "")
+const key = ref(store.state.key || "")
+const showKey = ref(false)
+const error = ref("")
 
-    if (!name.value) {
-      error.value = 'Name is required'
-    } else if (!roomName.value) {
-      error.value = 'Room Name is required'
-    } else if (!key.value) {
-      error.value = 'Encryption Key is required'
-    } else {
-      store.commit('SAVE_PROFILE', {
-        name: name.value,
-        roomName: roomName.value,
-        key: key.value
-      });
-    }
+function submitForm() {
+  error.value = null
+
+  if (!name.value) {
+    error.value = "Name is required"
+  } else if (!roomName.value) {
+    error.value = "Room Name is required"
+  } else if (!key.value) {
+    error.value = "Encryption Key is required"
+  } else {
+    store.commit("SAVE_PROFILE", {
+      name: name.value,
+      roomName: roomName.value,
+      key: key.value,
+    })
   }
+}
 </script>
 
 <template>
@@ -36,30 +37,30 @@
 
   <form>
     <v-text-field
+      v-model="name"
       label="Your username"
       variant="outlined"
-      v-model="name"
       @keyup.enter="submitForm()"
     />
 
     <v-text-field
+      v-model="roomName"
       label="Room Name"
       variant="outlined"
-      v-model="roomName"
       @keyup.enter="submitForm()"
     />
 
     <v-text-field
+      v-model="key"
       label="Encryption Key"
       variant="outlined"
-      v-model="key"
-      @keyup.enter="submitForm()"
       :type="showKey ? 'text' : 'password'"
       :append-icon="showKey ? 'mdi-eye-off' : 'mdi-eye'"
+      @keyup.enter="submitForm()"
       @click:append="showKey = !showKey"
     />
 
-    <br>
+    <br />
 
     <v-btn color="primary" class="fullWidth" @click="submitForm()">
       Submit
@@ -72,25 +73,25 @@
 </template>
 
 <style scoped>
-  h1 {
-    margin-top: 10px;
-  }
-  h3 {
-    margin-bottom: 40px;
-  }
+h1 {
+  margin-top: 10px;
+}
+h3 {
+  margin-bottom: 40px;
+}
 
-  form {
-    text-align: left;
-    width: 300px;
-    max-width: 100%;
-    margin: auto;
-  }
-  form button {
-    height: 50px !important;
-  }
+form {
+  text-align: left;
+  width: 300px;
+  max-width: 100%;
+  margin: auto;
+}
+form button {
+  height: 50px !important;
+}
 
-  #errorMessage {
-    color: red;
-    margin-top: 40px;
-  }
+#errorMessage {
+  color: red;
+  margin-top: 40px;
+}
 </style>

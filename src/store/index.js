@@ -1,26 +1,26 @@
-import { createStore } from "vuex";
-import { useStorage } from '@vueuse/core'
+import { createStore } from "vuex"
+import { useStorage } from "@vueuse/core"
 
-const messagesMap = useStorage('messagesMap', {})
-const useDarkMode = useStorage('useDarkMode', true)
+const messagesMap = useStorage("messagesMap", {})
+const useDarkMode = useStorage("useDarkMode", true)
 
 const store = createStore({
   state: {
     name: null,
     roomName: null,
-    key: 'test',
+    key: "test",
     room: {},
   },
   getters: {
     getMessages(state) {
-      return messagesMap.value[state.roomName] || [];
+      return messagesMap.value[state.roomName] || []
     },
 
-    getUseDarkMode(state) {
-      return useDarkMode.value;
-    }
+    getUseDarkMode() {
+      return useDarkMode.value
+    },
   },
-  mutations:{
+  mutations: {
     SAVE_PROFILE(state, profile) {
       const { name, roomName, key } = profile
 
@@ -28,13 +28,11 @@ const store = createStore({
       state.roomName = roomName
       state.key = key
     },
-
     SET_ROOM_INFO(state, room) {
       state.room.room = room.room
       state.room.users = room.users
       state.room.count = room.total_users
     },
-
     PUSH_MESSAGE(state, message) {
       let _messages = messagesMap.value[state.roomName] || []
 
@@ -46,16 +44,11 @@ const store = createStore({
       messagesMap.value[state.roomName] = []
     },
   },
-  actions:{
-    saveNote({ commit }, profile) {
-
-      commit('SAVE_NOTE',title);
-    },
-
+  actions: {
     toggleTheme() {
       useDarkMode.value = !useDarkMode.value
-    }
-  }
-});
+    },
+  },
+})
 
-export default store;
+export default store
