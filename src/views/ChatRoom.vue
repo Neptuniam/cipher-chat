@@ -299,6 +299,12 @@
   }
 
   #usersTypingRow {
+    position: relative;
+    top: -23px;
+    left: 10px;
+
+    z-index: 0;
+
     text-align: left;
     padding-top: 5px;
     padding-left: 5px;
