@@ -239,7 +239,8 @@ onUnmounted(() => {
           rows="2"
           row-height="15"
           @input="handleInput()"
-          @keyup.enter="submitMessage()"
+          @keydown.enter.exact.prevent="submitMessage()"
+          @keydown.enter.shift.exact.prevent="newMessage += '\n'"
         />
 
         <v-btn color="primary" @click="submitMessage"> SEND </v-btn>

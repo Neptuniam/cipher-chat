@@ -10,6 +10,7 @@ const props = defineProps({
 const store = useStore()
 const name = ref(store.state.name)
 const fromActiveUser = name.value == decryption(props.message.author)
+const _message = window.marked.parse(decryption(props.message.text))
 
 function uniqueColour(name, s = 30, l = 40) {
   let hash = 0
@@ -50,12 +51,11 @@ function readableDateTime(time) {
           :src="decryption(props.message.text)"
         />
       </template>
+      <template v-else-if="!props.message.isEncrypted">
+        <span v-html="_message"> </span>
+      </template>
       <template v-else>
-        {{
-          !props.message.isEncrypted
-            ? decryption(props.message.text)
-            : props.message.text
-        }}
+        {{ props.message.text }}
       </template>
     </div>
 
