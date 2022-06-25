@@ -4,11 +4,12 @@ import MessageActionBar from "../components/chatRoom/MessageActionBar.vue"
 import Toolbar from "../components/chatRoom/Toolbar.vue"
 
 import { useStore } from "vuex"
-import { computed, ref, watch, onUnmounted } from "vue"
+import { computed, ref, watch } from "vue"
 import { getKey, encryption, decryption } from "../services/util.translate.js"
 
 import {
   useStorage,
+  useWebSocket,
   useWebNotification,
   useFocus,
   useWindowFocus,
@@ -30,6 +31,7 @@ const isFocused = useWindowFocus()
 
 let isTyping = false
 const usersTyping = ref([])
+const activeUsers = ref([])
 let timer
 
 function uuidv4() {
@@ -74,7 +76,7 @@ async function sendText(message, type = "message") {
   }
 
   // Send the msg object as a JSON-formatted string.
-  await webSocket.send(JSON.stringify(msg))
+  await send(JSON.stringify(msg))
 
   if (type == "message" || type == "image") pushMessage(msg)
 
@@ -97,6 +99,7 @@ function attemptNotification() {
   // Only send notifications if player is not on screen
   if (!isFocused.value) show()
 }
+
 function scrollToBottom() {
   let messengersContainer = document.getElementById("messengersContainer")
 
@@ -120,59 +123,68 @@ function handleInput() {
   }, 2000)
 }
 
-let webSocket
-function initConnection() {
-  webSocket = new WebSocket(
-    `wss://apps.carterbourette.ca/chat/rooms/${roomName.value}/users/${name.value}`
-  )
-
-  webSocket.onopen = function () {
-    webSocket.send("5209ac21-2004-4f17-bdf4-b2e66d4ce50f")
-  }
-
-  webSocket.onclose = function (event) {
-    if (event.wasClean) {
-      alert(
-        `[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`
-      )
-    } else {
-      // e.g. server process killed or network down
-      // event.code is usually 1006 in this case
-      alert("[close] Connection died")
-      initConnection()
-    }
-  }
-
-  webSocket.onmessage = async function (event) {
-    const _json = JSON.parse(event.data)
-
-    if (_json.event == "joined" || _json.event == "left") {
-      await store.commit("SET_ROOM_INFO", _json)
-      pushMessage(_json)
-      attemptNotification()
-    } else if (_json && _json.payload) {
-      if (_json.payload.type == "action") {
-        const _text = decryption(_json.payload.text)
-
-        if (_text == "IS_TYPING") {
-          usersTyping.value.push(_json.payload.author)
-        } else if (_text == "IS_NOT_TYPING") {
-          const index = usersTyping.value.indexOf(_json.payload.author)
-          if (index > -1) usersTyping.value.splice(index, 1)
-        }
-      } else if (_json.payload.author != name.value) {
-        attemptNotification()
-
-        await pushMessage(_json.payload)
-        scrollToBottom()
-      }
-    }
-  }
-}
-
 getKey(key.value)
 const clientID = uuidv4()
-initConnection()
+
+// Connect to the websocket
+const url = `wss://apps.carterbourette.ca/chat/rooms/${roomName.value}/users/${name.value}`
+const { data, send } = useWebSocket(url, {
+  autoReconnect: {
+    retries: 3,
+    delay: 1000,
+    onFailed() {
+      alert("Failed to connect WebSocket after 3 retries")
+    },
+  },
+})
+
+// Authenticate with the backend
+send("5209ac21-2004-4f17-bdf4-b2e66d4ce50f")
+
+//
+watch(data, (event) => {
+  const _json = JSON.parse(event)
+
+  if (_json.event == "joined" || _json.event == "left") {
+    store.commit("SET_ROOM_INFO", _json)
+    pushMessage(_json)
+    attemptNotification()
+  } else if (_json && _json.payload) {
+    if (_json.payload.type == "action") {
+      const _text = decryption(_json.payload.text)
+      const author = _json.payload.author
+
+      switch (_text) {
+        case "IS_TYPING":
+          usersTyping.value.push(author)
+
+          break
+        case "IS_NOT_TYPING": {
+          let index = usersTyping.value.indexOf(author)
+          if (index > -1) usersTyping.value.splice(index, 1)
+
+          break
+        }
+        case "IS_FOCUSED":
+          activeUsers.value.push(author)
+          break
+
+        case "IS_NOT_FOCUSED": {
+          let index = activeUsers.value.indexOf(author)
+          if (index > -1) activeUsers.value.splice(index, 1)
+
+          break
+        }
+      }
+    } else if (_json.payload.author != name.value) {
+      attemptNotification()
+
+      pushMessage(_json.payload)
+      scrollToBottom()
+    }
+  }
+})
+
 setRoomEncryptStatus(false)
 setTimeout(() => scrollToBottom(), 1000)
 
@@ -196,13 +208,17 @@ watch(idle, () => {
   if (idle.value) setRoomEncryptStatus(true)
 })
 
+watch(
+  isFocused,
+  (isFocused) => {
+    sendText(isFocused === true ? "IS_FOCUSED" : "IS_NOT_FOCUSED", "action")
+  },
+  { immediate: true }
+)
+
 //  Will auto focus the input field when the user starts typing
 onStartTyping(() => {
   if (!messageInput.value.active) messageInput.value.focus()
-})
-
-onUnmounted(() => {
-  webSocket.close()
 })
 </script>
 
@@ -245,8 +261,13 @@ onUnmounted(() => {
 
         <v-btn color="primary" @click="submitMessage"> SEND </v-btn>
       </v-row>
-
       <div id="usersTypingRow">
+        <template v-for="(user, index) in activeUsers" :key="user">
+          <v-icon> mdi-eye-outline </v-icon>
+          {{ decryption(user) }} is active
+          {{ index < activeUsers.length - 1 ? ", " : "" }}
+        </template>
+
         <template v-for="(user, index) in usersTyping" :key="user">
           {{ decryption(user) }} is typing...
           {{ index < usersTyping.length - 1 ? ", " : "" }}
@@ -292,19 +313,19 @@ onUnmounted(() => {
   }
 }
 
-  #usersTypingRow {
-    position: relative;
-    top: -23px;
-    left: 10px;
+#usersTypingRow {
+  position: relative;
+  top: -23px;
+  left: 10px;
 
-    z-index: 0;
+  z-index: 0;
 
-    text-align: left;
-    padding-top: 5px;
-    padding-left: 5px;
-    height: 30px;
-    font-size: 12px;
-  }
+  text-align: left;
+  padding-top: 5px;
+  padding-left: 5px;
+  height: 30px;
+  font-size: 12px;
+}
 
 #inputRow {
   margin-top: 15px;

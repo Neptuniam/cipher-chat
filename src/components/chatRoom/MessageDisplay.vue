@@ -4,7 +4,7 @@ import { ref } from "vue"
 import { decryption } from "../../services/util.translate.js"
 
 const props = defineProps({
-  message: String,
+  message: Object,
 })
 
 const store = useStore()
