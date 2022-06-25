@@ -53,7 +53,7 @@ function setRoomEncryptStatus(status) {
 }
 
 function pushMessage(message) {
-  store.commit("PUSH_MESSAGE", {
+  return store.commit("PUSH_MESSAGE", {
     ...message,
     isEncrypted: idle.value,
   })
@@ -146,7 +146,7 @@ async function submitMessage() {
 
 function attemptNotification() {
   // Only send notifications if player is not on screen
-  if (!isFocused.value) show()
+  if (!isFocused.value) showNewMessage()
 }
 
 function scrollToBottom() {
@@ -194,13 +194,14 @@ watch(status, (status) => {
 send("5209ac21-2004-4f17-bdf4-b2e66d4ce50f")
 
 //
-watch(data, (event) => {
+watch(data, async (event) => {
   const _json = JSON.parse(event)
 
   if (_json.event == "joined" || _json.event == "left") {
     store.commit("SET_ROOM_INFO", _json)
-    pushMessage(_json)
+    await pushMessage(_json)
     attemptNotification()
+    scrollToBottom()
   } else if (_json && _json.payload) {
     if (_json.payload.type == "action") {
       const _text = decryption(_json.payload.text)
@@ -227,10 +228,17 @@ watch(data, (event) => {
           break
       }
     } else if (_json.payload.author != name.value) {
+      const _text = decryption(_json.payload.text)
+
       attemptNotification()
 
-      pushMessage(_json.payload)
+      await pushMessage(_json.payload)
       scrollToBottom()
+
+      if (_text.toLowerCase().includes(`@${name.value.toLowerCase()}`)) {
+        showTagged()
+        alert(`${decryption(_json.payload.author)} tagged you in a message`)
+      }
     }
   }
 })
@@ -238,8 +246,15 @@ watch(data, (event) => {
 setRoomEncryptStatus(false)
 setTimeout(() => scrollToBottom(), 1000)
 
-const { show } = useWebNotification({
+const { show: showNewMessage } = useWebNotification({
   title: `New message in ${roomName.value}`,
+  dir: "auto",
+  lang: "en",
+  renotify: true,
+  tag: "test",
+})
+const { show: showTagged} = useWebNotification({
+  title: `Tagged in a message in ${roomName.value}`,
   dir: "auto",
   lang: "en",
   renotify: true,
