@@ -22,6 +22,7 @@ const store = useStore()
 const name = ref(store.state.name)
 const roomName = ref(store.state.roomName)
 const key = ref(store.state.key)
+const room = ref(store.state.room)
 
 const messagesMap = useStorage("messagesMap", {})
 const messages = computed(() => store.getters.getMessages)
@@ -93,6 +94,22 @@ function slashCommand() {
       return "¯\_(ツ)_/¯"
     case "/scroll":
       return `<marquee>${multi.join(" ")}</marquee>`
+    case "/room":
+      return `
+    ${roomName.value}\n${room.value.users.map(_user => {
+      let status = "(Not Active)"
+      if (name.value == _user) {
+        status = "(You)"
+      } else if (activeUsers.value.find(_activeUser => decryption(_activeUser) == _user)) {
+        status = "(Active)"
+      }
+
+      return `* ${_user} ${status}`
+    }).join('\n')}
+      `
+    case "/encrypt":
+      setRoomEncryptStatus(true)
+      return
     case "/clear":
       store.commit("CLEAR_CHAT")
       return
@@ -101,6 +118,8 @@ function slashCommand() {
       return `#### Slash Command Help
   * \`/shrug\`: just cause
   * \`/scroll <msg>\`: add absurd scrolling effects
+  * \`/room\`: room info
+  * \`/encrypt\`: encrypt history
   * \`/clear\`: clear chat history
   * \`/help\`: help text
       `
@@ -192,22 +211,20 @@ watch(data, (event) => {
           usersTyping.value.push(author)
 
           break
-        case "IS_NOT_TYPING": {
-          let index = usersTyping.value.indexOf(author)
+        case "IS_NOT_TYPING":
+          var index = usersTyping.value.indexOf(author)
           if (index > -1) usersTyping.value.splice(index, 1)
 
           break
-        }
+
         case "IS_FOCUSED":
           activeUsers.value.push(author)
           break
-
-        case "IS_NOT_FOCUSED": {
-          let index = activeUsers.value.indexOf(author)
+        case "IS_NOT_FOCUSED":
+          var index = activeUsers.value.indexOf(author)
           if (index > -1) activeUsers.value.splice(index, 1)
 
           break
-        }
       }
     } else if (_json.payload.author != name.value) {
       attemptNotification()
@@ -267,7 +284,9 @@ onStartTyping(() => {
               {{ message.user }} joined
             </template>
           </div>
-          <div v-else-if="message.event == 'left'">{{ message.user }} left</div>
+          <div v-else-if="message.event == 'left'">
+            {{ message.user }} left
+          </div>
           <template v-else>
             <message-display :message="message" />
           </template>

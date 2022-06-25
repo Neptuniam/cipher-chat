@@ -73,33 +73,11 @@ function leaveRoom() {
           @click="action.action"
         />
       </template>
-      <!-- <v-list-item prepend-icon="mdi-close" title="Clear Chat" class="clickable" @click="$emit('clearChat')" />
-     <v-list-item prepend-icon="mdi-lock-plus" title="Encrypt Chat" class="clickable" @click="$emit('setRoomEncryptStatus', true)" />
-
-     <br>
-     <v-list-item prepend-icon="mdi-theme-light-dark" title="Toggle Dark Mode" class="clickable" @click="toggleDarkMode" /> -->
     </v-list>
     <div v-else>
       <template v-for="(action, index) in actions" :key="index">
         <v-btn color="secondary" :icon="action.icon" @click="action.action" />
       </template>
-      <!-- <v-btn
-       color="secondary"
-       icon="mdi-close"
-       @click="$emit('clearChat')"
-     />
-
-     <v-btn
-       color="secondary"
-       icon="mdi-lock-plus"
-       @click="$emit('setRoomEncryptStatus', true)"
-     />
-
-     <v-btn
-       color="secondary"
-       icon="mdi-theme-light-dark"
-       @click="toggleDarkMode"
-     /> -->
     </div>
 
     <template #append>

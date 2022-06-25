@@ -11,6 +11,7 @@ const store = createStore({
     key: "test",
     room: {},
   },
+
   getters: {
     getMessages(state) {
       return messagesMap.value[state.roomName] || []
@@ -20,6 +21,7 @@ const store = createStore({
       return useDarkMode.value
     },
   },
+
   mutations: {
     SAVE_PROFILE(state, profile) {
       const { name, roomName, key } = profile
@@ -44,6 +46,7 @@ const store = createStore({
       messagesMap.value[state.roomName] = []
     },
   },
+
   actions: {
     toggleTheme() {
       useDarkMode.value = !useDarkMode.value
