@@ -61,7 +61,6 @@ function pushMessage(message) {
 // Send text to all users through the server
 async function sendText(message, type = "message") {
   if (!message) {
-    alert("Please type a message")
     return
   }
 
@@ -83,16 +82,47 @@ async function sendText(message, type = "message") {
   scrollToBottom()
 }
 
-async function submitMessage() {
-  if (newMessage.value) {
-    await sendText(newMessage.value)
-    newMessage.value = null
-    scrollToBottom()
+function slashCommand() {
+  const original = newMessage.value
+  const multi = original.split(" ")
+  const cmd = multi.shift()
 
-    clearTimeout(timer)
-    sendText("IS_NOT_TYPING", "action")
-    isTyping = false
+  switch (cmd) {
+    case "/shrug":
+      // eslint-disable-next-line no-useless-escape
+      return "¯\_(ツ)_/¯"
+    case "/scroll":
+      return `<marquee>${multi.join(" ")}</marquee>`
+    case "/clear":
+      store.commit("CLEAR_CHAT")
+      return
+    case "/help":
+    case "/h":
+      return `#### Slash Command Help
+  * \`/shrug\`: just cause
+  * \`/scroll <msg>\`: add absurd scrolling effects
+  * \`/clear\`: clear chat history
+  * \`/help\`: help text
+      `
   }
+
+  return original
+}
+
+async function submitMessage() {
+  let msg = newMessage.value
+
+  if (msg[0] == "/") {
+    msg = slashCommand()
+  }
+
+  await sendText(msg)
+  newMessage.value = null
+  scrollToBottom()
+
+  clearTimeout(timer)
+  sendText("IS_NOT_TYPING", "action")
+  isTyping = false
 }
 
 function attemptNotification() {
@@ -128,14 +158,17 @@ const clientID = uuidv4()
 
 // Connect to the websocket
 const url = `wss://apps.carterbourette.ca/chat/rooms/${roomName.value}/users/${name.value}`
-const { data, send } = useWebSocket(url, {
+const { status, data, send } = useWebSocket(url, {
   autoReconnect: {
-    retries: 3,
     delay: 1000,
     onFailed() {
       alert("Failed to connect WebSocket after 3 retries")
     },
   },
+})
+
+watch(status, (status) => {
+  console.log("Websocket status:", status)
 })
 
 // Authenticate with the backend
