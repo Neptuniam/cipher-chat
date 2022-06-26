@@ -34,6 +34,8 @@ let isTyping = false
 const usersTyping = ref([])
 const activeUsers = ref([])
 let timer
+const actionBarRef = ref()
+
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
@@ -129,6 +131,10 @@ function slashCommand() {
 }
 
 async function submitMessage() {
+  // Send images with the message
+  if (actionBarRef && actionBarRef.value && actionBarRef.value.sendImage)
+    actionBarRef.value.sendImage()
+
   let msg = newMessage.value
 
   if (msg[0] == "/") {
@@ -193,7 +199,6 @@ watch(status, (status) => {
 // Authenticate with the backend
 send("5209ac21-2004-4f17-bdf4-b2e66d4ce50f")
 
-//
 watch(data, async (event) => {
   const _json = JSON.parse(event)
 
@@ -308,7 +313,7 @@ onStartTyping(() => {
         </template>
       </div>
 
-      <message-action-bar
+      <message-action-bar ref="actionBarRef"
         @set-room-encrypt-status="setRoomEncryptStatus"
         @send-text="sendText"
       />

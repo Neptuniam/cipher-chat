@@ -29,8 +29,10 @@ function handleChange($event) {
   }
 }
 async function sendImage() {
-  emit("sendText", imageToSend.value, "image")
-  imageToSend.value = null
+  if (imageToSend.value) {
+    emit("sendText", imageToSend.value, "image")
+    imageToSend.value = null
+  }
 }
 
 function testUnlockKey() {
@@ -55,6 +57,11 @@ document.onpaste = function (event) {
     }
   }
 }
+
+
+defineExpose({
+  sendImage
+})
 </script>
 
 <template>
