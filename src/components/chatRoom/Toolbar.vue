@@ -28,10 +28,23 @@ const actions = [
     icon: "mdi-theme-light-dark",
     action: toggleDarkMode,
   },
+  {
+    title: "Copy Link",
+    icon: "mdi-share-variant-outline",
+    action: copyLink,
+  },
 ]
 
 function toggleDarkMode() {
   store.dispatch("toggleTheme")
+}
+
+function copyLink() {
+   /* Copy the text inside the text field */
+  navigator.clipboard.writeText(window.location.href);
+
+  /* Alert the copied text */
+  alert("Copied the text: " + copyText.value);
 }
 
 function leaveRoom() {
@@ -118,19 +131,9 @@ nav {
 }
 
 @media only screen and (max-width: 940px) {
-  .v-list-item--nav .v-list-item-title {
-    /* display: none !important; */
-  }
-
   #navDrawer {
     position: fixed !important;
-    /* top: 0px !important; */
     left: -100vw !important;
-
-    /* margin-top: 0px !important;
-    height: 100vh !important;
-
-    z-index: 0 !important; */
 
     -webkit-transition: all .5s ease-in-out;
   }
