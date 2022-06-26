@@ -31,8 +31,11 @@ function handleChange($event) {
 async function sendImage() {
   if (imageToSend.value) {
     emit("sendText", imageToSend.value, "image")
-    imageToSend.value = null
+    clearImage()
   }
+}
+function clearImage() {
+  imageToSend.value = null
 }
 
 function testUnlockKey() {
@@ -57,7 +60,6 @@ document.onpaste = function (event) {
     }
   }
 }
-
 
 defineExpose({
   sendImage
@@ -84,9 +86,19 @@ defineExpose({
 
     <template v-if="imageToSend">
       <img :src="imageToSend" />
-      <v-btn id="sendImageButton" color="secondary" @click="sendImage">
+      <!-- <v-btn id="sendImageButton" color="secondary" @click="sendImage">
         Send
-      </v-btn>
+      </v-btn> -->
+    </template>
+
+    <template v-if="imageToSend">
+      <v-btn
+        id="clearImageButton"
+        class="ma-2"
+        color="accent"
+        icon="mdi-close"
+        @click="clearImage"
+      />
     </template>
 
     <div v-if="containsEncryped" id="unlockKeyForm">
@@ -140,7 +152,9 @@ defineExpose({
 #toolbarRow img {
   position: absolute;
   top: 1px;
-  left: 50px;
+  left: 60px;
+
+  object-fit: cover;
 
   width: 70px !important;
   height: 40px !important;
@@ -148,10 +162,19 @@ defineExpose({
 #toolbarRow #sendImageButton {
   position: absolute;
   top: 1px;
-  left: 130px;
+  right: 60px;
 
   width: 70px !important;
   height: 40px !important;
+}
+#toolbarRow #clearImageButton {
+  position: absolute;
+  top: 1px;
+  left: 140px;
+
+  width: 40px !important;
+  height: 40px !important;
+  margin: 0px !important;
 }
 
 #unlockKeyForm .v-input {

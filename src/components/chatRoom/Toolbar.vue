@@ -8,6 +8,8 @@ const name = ref(store.state.name)
 const roomName = ref(store.state.roomName)
 const room = ref(store.state.room)
 
+const showNavBar = ref(false)
+
 const emit = defineEmits(["setRoomEncryptStatus"])
 
 const actions = [
@@ -42,29 +44,49 @@ function leaveRoom() {
 </script>
 
 <template>
-  <component
-    :is="$vuetify.display.mdAndUp ? 'v-navigation-drawer' : 'v-app-bar'"
+  <v-app-bar v-if="$vuetify.display.smAndDown">
+    <template v-slot:prepend>
+      <v-app-bar-nav-icon
+        color="primary"
+        @click="showNavBar = !showNavBar"
+      />
+    </template>
+
+    <v-app-bar-title>
+      {{ room.room }}
+    </v-app-bar-title>
+
+    <template #append>
+      <v-btn
+        class="ma-2"
+        color="primary"
+        icon="mdi-exit-to-app"
+        @click="leaveRoom"
+      />
+    </template>
+  </v-app-bar>
+
+  <v-navigation-drawer id="navDrawer" :class="{ 'showing': showNavBar }"
+     @click="showNavBar = false"
     :expand-on-hover="true"
-    :rail="true"
+    :rail="$vuetify.display.mdAndUp"
   >
     <v-list>
       <v-list-item :title="'' + room.room"></v-list-item>
 
-      <template v-if="$vuetify.display.mdAndUp">
-        <div
-          v-for="(user, index) in room.users"
-          id="userName"
-          :key="index"
-          style="text-align: left; padding-left: 5px"
-        >
-          {{ index + 1 }}. {{ user }}
-        </div>
-      </template>
+      <div
+        v-for="(user, index) in room.users"
+        id="userName"
+        :key="index"
+        style="text-align: left; padding-left: 5px"
+      >
+        {{ index + 1 }}. {{ user }}
+      </div>
     </v-list>
 
-    <v-divider v-if="$vuetify.display.mdAndUp"></v-divider>
+    <v-divider></v-divider>
 
-    <v-list v-if="$vuetify.display.mdAndUp" nav>
+    <v-list nav>
       <template v-for="(action, index) in actions" :key="index">
         <v-list-item
           :prepend-icon="action.icon"
@@ -74,18 +96,13 @@ function leaveRoom() {
         />
       </template>
     </v-list>
-    <div v-else>
-      <template v-for="(action, index) in actions" :key="index">
-        <v-btn color="secondary" :icon="action.icon" @click="action.action" />
-      </template>
-    </div>
 
-    <template #append>
+    <template v-if="$vuetify.display.mdAndUp" #append>
       <div class="pa-2">
         <v-btn block color="primary" @click="leaveRoom"> Exit </v-btn>
       </div>
     </template>
-  </component>
+  </v-navigation-drawer>
 </template>
 
 <style>
@@ -102,9 +119,26 @@ nav {
 
 @media only screen and (max-width: 940px) {
   .v-list-item--nav .v-list-item-title {
-    display: none !important;
+    /* display: none !important; */
+  }
+
+  #navDrawer {
+    position: fixed !important;
+    /* top: 0px !important; */
+    left: -100vw !important;
+
+    /* margin-top: 0px !important;
+    height: 100vh !important;
+
+    z-index: 0 !important; */
+
+    -webkit-transition: all .5s ease-in-out;
+  }
+  #navDrawer.showing {
+    left: 0px !important
   }
 }
+
 </style>
 <style scoped>
 #userName {
@@ -112,4 +146,6 @@ nav {
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
+
+
 </style>

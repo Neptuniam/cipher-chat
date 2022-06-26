@@ -224,7 +224,10 @@ watch(data, async (event) => {
           break
 
         case "IS_FOCUSED":
-          activeUsers.value.push(author)
+          // Should only exist in list once
+          var index = activeUsers.value.indexOf(author)
+          if (index == -1) activeUsers.value.push(author)
+          
           break
         case "IS_NOT_FOCUSED":
           var index = activeUsers.value.indexOf(author)
@@ -298,6 +301,8 @@ onStartTyping(() => {
 
     <v-main theme="dark">
       <div id="messengersContainer">
+        <!-- hacks but only way it worked on my android? Will need to test in prod -->
+        <div v-if="$vuetify.display.smAndDown" style="height: 55px;"></div>
         <template v-for="message in messages" :key="message.user">
           <div v-if="message.event == 'joined'">
             <template v-if="message.user != name">
@@ -334,15 +339,18 @@ onStartTyping(() => {
         <v-btn color="primary" @click="submitMessage"> SEND </v-btn>
       </v-row>
       <div id="usersTypingRow">
-        <template v-for="(user, index) in activeUsers" :key="user">
-          <v-icon> mdi-eye-outline </v-icon>
-          {{ decryption(user) }} is active
-          {{ index < activeUsers.length - 1 ? ", " : "" }}
+        <template v-if="usersTyping == null || !usersTyping.length">
+          <template v-for="(user, index) in activeUsers" :key="user">
+            <v-icon> mdi-eye-outline </v-icon>
+            {{ decryption(user) }} is active
+            {{ index < activeUsers.length - 1 ? ", " : "" }}
+          </template>
         </template>
-
-        <template v-for="(user, index) in usersTyping" :key="user">
-          {{ decryption(user) }} is typing...
-          {{ index < usersTyping.length - 1 ? ", " : "" }}
+        <template v-else>
+          <template v-for="(user, index) in usersTyping" :key="user">
+            {{ decryption(user) }} is typing...
+            {{ index < usersTyping.length - 1 ? ", " : "" }}
+          </template>
         </template>
       </div>
     </v-main>
